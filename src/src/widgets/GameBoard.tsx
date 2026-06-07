@@ -7,16 +7,15 @@ import type {
   TicTacToeMove } from
 '../entities/game/tic-tac-toe/engine';
 import { soundService } from '../shared/lib/sound';
+import { AnimatedX } from './AnimatedX';
+import { AnimatedO } from './AnimatedO';
 
 interface GameBoardProps {
   onAnimationComplete?: () => void;
 }
 
-import { AnimatedX } from './AnimatedX';
-import { AnimatedO } from './AnimatedO';
-
 export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => {
-  const { engine, gameState, makeMove, mode, mySlot, variant } = useGameStore();
+  const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece } = useGameStore();
 
   const boardState = gameState as TicTacToeState | null;
   const board = boardState?.board ?? [];
@@ -52,18 +51,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
 
   if (!ready) return null;
 
-  // Helpers for line drawing
+  const getCellPos = (index: number) => ({
+    x: (index % 3) * 33.33 + 16.66,
+    y: Math.floor(index / 3) * 33.33 + 16.66
+  });
+
   const getLineCoords = (line: number[]) => {
     const start = line[0];
     const end = line[2];
     
-    const getPos = (index: number) => ({
-      x: (index % 3) * 33.33 + 16.66,
-      y: Math.floor(index / 3) * 33.33 + 16.66
-    });
-
-    const pos1 = getPos(start);
-    const pos2 = getPos(end);
+    const pos1 = getCellPos(start);
+    const pos2 = getCellPos(end);
     
     const dx = pos2.x - pos1.x;
     const dy = pos2.y - pos1.y;
@@ -140,6 +138,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
             );
           })}
         </div>
+
+        {/* Ghost Piece Overlay */}
+        {ghostPiece && (
+          <div className="absolute inset-0 z-30 pointer-events-none">
+            {(() => {
+              const pos = getCellPos(ghostPiece.index);
+              return (
+                <div 
+                  className="absolute w-[33.33%] h-[33.33%] flex items-center justify-center"
+                  style={{ left: `${pos.x - 16.66}%`, top: `${pos.y - 16.66}%` }}
+                >
+                  {ghostPiece.slot === 0 ? (
+                    <AnimatedX className="w-12 h-12" isRemoving={true} />
+                  ) : (
+                    <AnimatedO className="w-10 h-10" isRemoving={true} />
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {lineCoords && (
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-20">

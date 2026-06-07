@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const AnimatedO: React.FC<{ className?: string }> = ({ className }) => (
+export const AnimatedO: React.FC<{ className?: string; isRemoving?: boolean }> = ({ className, isRemoving }) => (
   <svg viewBox="0 0 100 100" className={className}>
     <motion.circle
       cx="50"
@@ -11,9 +11,9 @@ export const AnimatedO: React.FC<{ className?: string }> = ({ className }) => (
       strokeWidth="10"
       fill="none"
       strokeLinecap="round"
-      initial={{ pathLength: 0 }}
-      animate={{ pathLength: 1 }}
-      transition={{ duration: 0.35, ease: "linear" }}
+      initial={{ pathLength: isRemoving ? 1 : 0 }}
+      animate={{ pathLength: isRemoving ? 0 : 1 }}
+      transition={{ duration: 0.25, ease: "linear" }}
     />
   </svg>
 );
