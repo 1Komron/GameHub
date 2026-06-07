@@ -10,7 +10,7 @@ import type {
 import { soundService } from '../shared/lib/sound';
 
 export const GameBoard: React.FC = () => {
-  const { engine, gameState, makeMove, mode, mySlot } = useGameStore();
+  const { engine, gameState, makeMove, mode, mySlot, variant } = useGameStore();
 
   const boardState = gameState as TicTacToeState | null;
   const board = boardState?.board ?? [];
@@ -18,7 +18,15 @@ export const GameBoard: React.FC = () => {
   const status = ready ? engine!.getStatus(gameState!) : 'draw';
   const isGameOver = status === 'won' || status === 'draw';
 
-  const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && engine!.getCurrentSlot(gameState!) === mySlot);
+  const currentSlot = engine && gameState ? engine.getCurrentSlot(gameState) : null;
+  const pieceHistory = boardState?.pieceHistory;
+
+  // Calculate oldest piece index for blinking
+  const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
+    ? pieceHistory[currentSlot][0]
+    : null;
+
+  const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);
 
   const handleCellClick = (index: number) => {
     if (!canInteract || board[index] !== null) return;
@@ -50,6 +58,7 @@ export const GameBoard: React.FC = () => {
                     initial={{ scale: 0.7, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
+                    className={cn(index === oldestIndex && 'animate-blink')}
                   >
                     {cell === 0 ? <X className="text-blue-500 w-12 h-12" strokeWidth={3} /> : <Circle className="text-red-500 w-10 h-10" strokeWidth={3.5} />}
                   </motion.div>
