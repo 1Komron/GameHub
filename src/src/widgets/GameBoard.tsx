@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
 import { useGameStore } from '../entities/game/model/store';
 import { cn } from '../shared/lib/utils';
-import { X, Circle } from 'lucide-react';
 import type {
   TicTacToeState,
   TicTacToeMove } from
 '../entities/game/tic-tac-toe/engine';
 import { soundService } from '../shared/lib/sound';
 
-export const GameBoard: React.FC = () => {
+interface GameBoardProps {
+  onAnimationComplete?: () => void;
+}
+
+import { AnimatedX } from './AnimatedX';
+import { AnimatedO } from './AnimatedO';
+
+export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => {
   const { engine, gameState, makeMove, mode, mySlot, variant } = useGameStore();
 
   const boardState = gameState as TicTacToeState | null;
@@ -19,10 +25,19 @@ export const GameBoard: React.FC = () => {
   const isGameOver = status === 'won' || status === 'draw';
   const winningLine = boardState?.winningLine ?? null;
 
+  useEffect(() => {
+    if (isGameOver) {
+      const delay = status === 'won' ? 700 : 300;
+      const timer = setTimeout(() => {
+        onAnimationComplete?.();
+      }, delay);
+      return () => clearTimeout(timer);
+    }
+  }, [isGameOver, status, onAnimationComplete]);
+
   const currentSlot = engine && gameState ? engine.getCurrentSlot(gameState) : null;
   const pieceHistory = boardState?.pieceHistory;
 
-  // Calculate oldest piece index for blinking
   const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
     ? pieceHistory[currentSlot][0]
     : null;
@@ -42,8 +57,6 @@ export const GameBoard: React.FC = () => {
     const start = line[0];
     const end = line[2];
     
-    // Centers of cells 0-8 in % (0-33, 33-66, 66-100)
-    // Centers: 16.66%, 50%, 83.33%
     const getPos = (index: number) => ({
       x: (index % 3) * 33.33 + 16.66,
       y: Math.floor(index / 3) * 33.33 + 16.66
@@ -52,12 +65,10 @@ export const GameBoard: React.FC = () => {
     const pos1 = getPos(start);
     const pos2 = getPos(end);
     
-    // Calculate direction vector to extend line
     const dx = pos2.x - pos1.x;
     const dy = pos2.y - pos1.y;
     const len = Math.sqrt(dx * dx + dy * dy);
     
-    // Extension factor - 8% for better strike-through look
     const ext = 8; 
     
     const x1 = pos1.x - (dx / len) * ext;
@@ -80,15 +91,11 @@ export const GameBoard: React.FC = () => {
 
   return (
     <LayoutGroup>
-      <motion.div 
-        animate={{ y: isGameOver ? -24 : 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[360px] aspect-square mx-auto"
-      >
+      <div className="relative w-full max-w-[360px] aspect-square mx-auto">
         <div className="grid grid-cols-3 grid-rows-3 h-full w-full rounded-2xl overflow-hidden bg-tg-bg ring-1 ring-slate-300 dark:ring-slate-600 shadow-lg relative z-10">
           {board.map((cell: any, index: number) => {
             const isWinningCell = winningLine?.includes(index);
-            const opacity = isGameOver 
+            const symbolOpacity = isGameOver 
               ? (status === 'draw' ? 0.6 : (isWinningCell ? 1 : 0.45))
               : 1;
 
@@ -97,23 +104,37 @@ export const GameBoard: React.FC = () => {
                 key={index}
                 onClick={() => handleCellClick(index)}
                 disabled={!canInteract}
-                style={{ opacity }}
                 className={cn(
-                  'relative flex items-center justify-center transition-opacity duration-500 ease-in-out outline-none border-slate-300 dark:border-slate-600',
+                  'relative flex items-center justify-center transition-transform duration-700 ease-in-out outline-none border-slate-300 dark:border-slate-600',
                   index % 3 !== 2 && 'border-r-4',
                   index < 6 && 'border-b-4'
                 )}
               >
                 {cell !== null && (
-                  <motion.div 
-                    layoutId={`cell-${index}`}
-                    initial={{ scale: 0.7, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className={cn(index === oldestIndex && 'animate-blink')}
-                  >
-                    {cell === 0 ? <X className="text-blue-500 w-12 h-12" strokeWidth={3} /> : <Circle className="text-red-500 w-10 h-10" strokeWidth={3.5} />}
-                  </motion.div>
+                  !isGameOver ? (
+                    <motion.div 
+                      layoutId={`cell-${index}`}
+                      style={{ opacity: symbolOpacity, transition: 'opacity 300ms ease-in-out' }}
+                      className={cn(index === oldestIndex && 'animate-blink')}
+                    >
+                      {cell === 0 ? (
+                        <AnimatedX className="w-12 h-12" />
+                      ) : (
+                        <AnimatedO className="w-10 h-10" />
+                      )}
+                    </motion.div>
+                  ) : (
+                    <div 
+                      style={{ opacity: symbolOpacity, transition: 'opacity 300ms ease-in-out' }}
+                      className={cn(index === oldestIndex && 'animate-blink')}
+                    >
+                      {cell === 0 ? (
+                        <AnimatedX className="w-12 h-12" />
+                      ) : (
+                        <AnimatedO className="w-10 h-10" />
+                      )}
+                    </div>
+                  )
                 )}
               </button>
             );
@@ -131,11 +152,11 @@ export const GameBoard: React.FC = () => {
               className={lineColor}
               initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
             />
           </svg>
         )}
-      </motion.div>
+      </div>
     </LayoutGroup>
   );
 };
