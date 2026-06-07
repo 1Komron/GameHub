@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Frown, Minus } from 'lucide-react';
@@ -8,39 +8,66 @@ import { useSettingsStore } from '../entities/settings/model/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { Button } from '../shared/ui/Button';
 import { soundService } from '../shared/lib/sound';
+import type { MatchResult } from '../entities/game-engine/types';
 export const GameOverModal: React.FC = () => {
   const navigate = useNavigate();
-  const { engine, gameState, mode, mySlot, resetGame, gameId } = useGameStore();
+  const { engine, gameState, mode, mySlot, resetGame, gameId, matchId } = useGameStore();
   const { recordResult } = useStatisticsStore();
   const { animationsEnabled } = useSettingsStore();
   const { leaveRoom } = useRoomStore();
+  const lastProcessedMatchIdRef = useRef<string | null>(null);
+
   const status = engine && gameState ? engine.getStatus(gameState) : 'idle';
   const isGameOver = status === 'won' || status === 'draw';
   const winnerSlot = engine && gameState ? engine.getWinner(gameState) : null;
+
   // Record stats and play sound when game ends
   useEffect(() => {
-    if (isGameOver && gameId) {
-      let result: 'win' | 'loss' | 'draw' = 'draw';
+    // 1. We only process the result if the game is over, we have a matchId, 
+    //    and we haven't already processed this specific matchId.
+    if (isGameOver && matchId && lastProcessedMatchIdRef.current !== matchId) {
+      lastProcessedMatchIdRef.current = matchId;
+      
+      let result: MatchResult = 'draw';
       if (status === 'won') {
         if (mode === 'local') {
-          // In local, we just record a win for the platform stats
-          result = 'win';
+          // Local wins are not attributed to the user
+          result = 'none';
         } else {
           // In online, it's relative to mySlot
           result = winnerSlot === mySlot ? 'win' : 'loss';
         }
       }
-      recordResult(gameId, result);
-      if (result === 'win') soundService.play('win');else
-      if (result === 'loss') soundService.play('loss');else
-      soundService.play('notification');
+      
+      if (gameId) {
+        // Stats logic
+        if (mode === 'local') {
+          // Record 'draw' for draws, 'none' for wins (still increments 'played')
+          recordResult(gameId, status === 'draw' ? 'draw' : 'none');
+        } else {
+          recordResult(gameId, result);
+        }
+      }
+      
+      // Sound logic - for local wins we still play the win sound
+      if (status === 'won') {
+        if (mode === 'local' || result === 'win') {
+          soundService.play('win');
+        } else {
+          soundService.play('loss');
+        }
+      } else {
+        soundService.play('notification');
+      }
     }
-  }, [isGameOver, status, winnerSlot, mode, mySlot, gameId, recordResult]);
+  }, [isGameOver, status, winnerSlot, mode, mySlot, gameId, matchId, recordResult]);
   if (!isGameOver) return null;
   const handlePlayAgain = () => {
+    soundService.play('click');
     resetGame();
   };
   const handleBackToMenu = () => {
+    soundService.play('click');
     resetGame();
     if (mode === 'online') {
       leaveRoom();

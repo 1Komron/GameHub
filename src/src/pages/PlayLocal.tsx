@@ -10,6 +10,7 @@ import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { ticTacToeEngine } from '../entities/game/tic-tac-toe/engine';
 import { getGameById } from '../shared/config/games';
+import { soundService } from '../shared/lib/sound';
 export const PlayLocal: React.FC = () => {
   const { gameId } = useParams<{
     gameId: string;
@@ -34,7 +35,10 @@ export const PlayLocal: React.FC = () => {
           <ArrowLeft size={24} />
         </Button>
         <h1 className="text-xl font-bold">{gameDef?.title || 'Local Match'}</h1>
-        <Button variant="ghost" size="icon" onClick={resetGame}>
+        <Button variant="ghost" size="icon" onClick={() => {
+          soundService.play('click');
+          resetGame();
+        }}>
           <RotateCcw size={24} />
         </Button>
       </header>

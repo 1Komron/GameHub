@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { nanoid } from 'nanoid';
 import type {
   GameEngine,
   GameId,
@@ -9,6 +10,7 @@ import { getTransport } from '../../../shared/api/socket';
 
 interface GameStoreState<TState = any, TMove = any> {
   gameId: GameId | null;
+  matchId: string | null;
   mode: GameMode | null;
   engine: GameEngine<TState, TMove> | null;
   gameState: TState | null;
@@ -34,6 +36,7 @@ export const useGameStore = create<GameStoreState>((set, get) => {
 
   return {
     gameId: null,
+    matchId: null,
     mode: null,
     engine: null,
     gameState: null,
@@ -42,6 +45,7 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     initLocal: (engine) => {
       set({
         gameId: engine.id,
+        matchId: nanoid(),
         mode: 'local',
         engine,
         gameState: engine.createInitialState(),
@@ -52,6 +56,7 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     initOnline: (engine, mySlot) => {
       set({
         gameId: engine.id,
+        matchId: nanoid(),
         mode: 'online',
         engine,
         gameState: engine.createInitialState(),
@@ -82,7 +87,10 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     resetGame: () => {
       const { engine } = get();
       if (engine) {
-        set({ gameState: engine.createInitialState() });
+        set({
+          matchId: nanoid(),
+          gameState: engine.createInitialState()
+        });
       }
     }
   };

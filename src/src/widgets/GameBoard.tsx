@@ -61,13 +61,6 @@ export const GameBoard: React.FC = () => {
               key={index}
               onClick={() => handleCellClick(index)}
               disabled={!isInteractable}
-              whileTap={
-              isInteractable && animationsEnabled ?
-              {
-                scale: 0.94
-              } :
-              undefined
-              }
               className={cn(
                 'relative flex items-center justify-center transition-colors duration-150 outline-none',
                 'border-slate-300 dark:border-slate-600',
@@ -104,69 +97,80 @@ export const GameBoard: React.FC = () => {
 
               }
 
-              {cell === 0 &&
-              <motion.span
-                className="relative z-10"
-                initial={
-                animationsEnabled ?
+              <motion.div
+                className="flex items-center justify-center w-full h-full"
+                whileTap={
+                isInteractable && animationsEnabled ?
                 {
-                  scale: 0,
-                  rotate: -45
+                  scale: 0.94
                 } :
-                false
+                undefined
+                }>
+                
+                {cell === 0 &&
+                <motion.span
+                  className="relative z-10 flex items-center justify-center w-full h-full"
+                  initial={
+                  animationsEnabled ?
+                  {
+                    scale: 0,
+                    rotate: -45
+                  } :
+                  false
+                  }
+                  animate={{
+                    scale: 1,
+                    rotate: 0
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 20
+                  }}>
+                  
+                    <X
+                    className={cn(
+                      'w-[58%] h-[58%] min-w-12 min-h-12',
+                      isWinningCell ?
+                      'text-green-600 dark:text-green-400' :
+                      'text-blue-500'
+                    )}
+                    strokeWidth={3} />
+                  
+                  </motion.span>
                 }
-                animate={{
-                  scale: 1,
-                  rotate: 0
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 20
-                }}>
-                
-                  <X
-                  className={cn(
-                    'w-[58%] h-[58%] min-w-12 min-h-12',
-                    isWinningCell ?
-                    'text-green-600 dark:text-green-400' :
-                    'text-blue-500'
-                  )}
-                  strokeWidth={3} />
-                
-                </motion.span>
-              }
 
-              {cell === 1 &&
-              <motion.span
-                className="relative z-10"
-                initial={
-                animationsEnabled ?
-                {
-                  scale: 0
-                } :
-                false
+                {cell === 1 &&
+                <motion.span
+                  className="relative z-10 flex items-center justify-center w-full h-full"
+                  initial={
+                  animationsEnabled ?
+                  {
+                    scale: 0
+                  } :
+                  false
+                  }
+                  animate={{
+                    scale: 1
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 20
+                  }}>
+                  
+                    <Circle
+                    className={cn(
+                      'w-[50%] h-[50%] min-w-10 min-h-10',
+                      isWinningCell ?
+                      'text-green-600 dark:text-green-400' :
+                      'text-red-500'
+                    )}
+                    strokeWidth={3.5} />
+                  
+                  </motion.span>
                 }
-                animate={{
-                  scale: 1
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 20
-                }}>
-                
-                  <Circle
-                  className={cn(
-                    'w-[50%] h-[50%] min-w-10 min-h-10',
-                    isWinningCell ?
-                    'text-green-600 dark:text-green-400' :
-                    'text-red-500'
-                  )}
-                  strokeWidth={3.5} />
-                
-                </motion.span>
-              }
+              </motion.div>
             </motion.button>);
 
         })}

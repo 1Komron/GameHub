@@ -22,7 +22,7 @@ export type MatchStatus = 'idle' | 'playing' | 'won' | 'draw';
 export type PlayerSlot = 0 | 1;
 
 /** Outcome reported to the statistics layer, relative to the local player. */
-export type MatchResult = 'win' | 'loss' | 'draw';
+export type MatchResult = 'win' | 'loss' | 'draw' | 'none';
 
 /**
  * The reusable per-game engine. Pure and serializable: state is plain data so
