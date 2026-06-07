@@ -17,6 +17,7 @@ export const GameBoard: React.FC = () => {
   const ready = Boolean(engine && gameState);
   const status = ready ? engine!.getStatus(gameState!) : 'draw';
   const isGameOver = status === 'won' || status === 'draw';
+  const winningLine = boardState?.winningLine ?? null;
 
   const currentSlot = engine && gameState ? engine.getCurrentSlot(gameState) : null;
   const pieceHistory = boardState?.pieceHistory;
@@ -36,18 +37,69 @@ export const GameBoard: React.FC = () => {
 
   if (!ready) return null;
 
+  // Helpers for line drawing
+  const getLineCoords = (line: number[]) => {
+    const start = line[0];
+    const end = line[2];
+    
+    // Centers of cells 0-8 in % (0-33, 33-66, 66-100)
+    // Centers: 16.66%, 50%, 83.33%
+    const getPos = (index: number) => ({
+      x: (index % 3) * 33.33 + 16.66,
+      y: Math.floor(index / 3) * 33.33 + 16.66
+    });
+
+    const pos1 = getPos(start);
+    const pos2 = getPos(end);
+    
+    // Calculate direction vector to extend line
+    const dx = pos2.x - pos1.x;
+    const dy = pos2.y - pos1.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    
+    // Extension factor - 8% for better strike-through look
+    const ext = 8; 
+    
+    const x1 = pos1.x - (dx / len) * ext;
+    const y1 = pos1.y - (dy / len) * ext;
+    const x2 = pos2.x + (dx / len) * ext;
+    const y2 = pos2.y + (dy / len) * ext;
+    
+    return { x1: `${x1}%`, y1: `${y1}%`, x2: `${x2}%`, y2: `${y2}%` };
+  };
+
+  const lineCoords = winningLine ? getLineCoords(winningLine) : null;
+
+  const getWinner = () => {
+    if (!winningLine || !boardState) return null;
+    return boardState.board[winningLine[0]];
+  };
+
+  const winner = getWinner();
+  const lineColor = winner === 0 ? 'text-blue-500' : 'text-red-500';
+
   return (
     <LayoutGroup>
-      <div className="relative w-full max-w-[360px] aspect-square mx-auto">
-        <div className="grid grid-cols-3 grid-rows-3 h-full w-full rounded-2xl overflow-hidden bg-tg-bg ring-1 ring-slate-300 dark:ring-slate-600 shadow-lg">
+      <motion.div 
+        animate={{ y: isGameOver ? -24 : 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="relative w-full max-w-[360px] aspect-square mx-auto"
+      >
+        <div className="grid grid-cols-3 grid-rows-3 h-full w-full rounded-2xl overflow-hidden bg-tg-bg ring-1 ring-slate-300 dark:ring-slate-600 shadow-lg relative z-10">
           {board.map((cell: any, index: number) => {
+            const isWinningCell = winningLine?.includes(index);
+            const opacity = isGameOver 
+              ? (status === 'draw' ? 0.6 : (isWinningCell ? 1 : 0.45))
+              : 1;
+
             return (
               <button
                 key={index}
                 onClick={() => handleCellClick(index)}
                 disabled={!canInteract}
+                style={{ opacity }}
                 className={cn(
-                  'relative flex items-center justify-center transition-transform duration-700 ease-in-out outline-none border-slate-300 dark:border-slate-600',
+                  'relative flex items-center justify-center transition-opacity duration-500 ease-in-out outline-none border-slate-300 dark:border-slate-600',
                   index % 3 !== 2 && 'border-r-4',
                   index < 6 && 'border-b-4'
                 )}
@@ -67,7 +119,23 @@ export const GameBoard: React.FC = () => {
             );
           })}
         </div>
-      </div>
+
+        {lineCoords && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-20">
+            <motion.line
+              x1={lineCoords.x1} y1={lineCoords.y1}
+              x2={lineCoords.x2} y2={lineCoords.y2}
+              stroke="currentColor"
+              strokeWidth="6"
+              strokeLinecap="round"
+              className={lineColor}
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            />
+          </svg>
+        )}
+      </motion.div>
     </LayoutGroup>
   );
 };
