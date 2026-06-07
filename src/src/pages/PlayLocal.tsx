@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { GameBoard } from '../widgets/GameBoard';
+import { GameResultActions } from '../widgets/GameResultActions';
 import { useGameStore } from '../entities/game/model/store';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { Button } from '../shared/ui/Button';
@@ -21,14 +22,18 @@ export const PlayLocal: React.FC = () => {
   const { initLocal, resetGame, engine, gameState } = useGameStore();
   const { animationsEnabled } = useSettingsStore();
   const gameDef = getGameById(gameId || '');
+
   useEffect(() => {
-    // Currently only TTT is implemented
     if (gameId === 'tic-tac-toe') {
       initLocal(ticTacToeEngine, mode);
     }
     return () => resetGame();
   }, [gameId, initLocal, resetGame, mode]);
+
   if (!engine || !gameState) return null;
+  const status = engine.getStatus(gameState);
+  const isGameOver = status === 'won' || status === 'draw';
+  const winner = status === 'won' ? engine.getWinner(gameState) : null;
   const currentSlot = engine.getCurrentSlot(gameState);
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
@@ -74,7 +79,16 @@ export const PlayLocal: React.FC = () => {
         </motion.div>
 
         {gameId === 'tic-tac-toe' && <GameBoard />}
-      </main>
-    </div>);
 
-};
+        <GameResultActions 
+          isVisible={isGameOver}
+          status={status}
+          winner={winner}
+          mode="local"
+          onPlayAgain={() => { soundService.play('click'); resetGame(); }}
+          onBackToMenu={() => { soundService.play('click'); resetGame(); navigate('/'); }}
+        />
+        </main>
+        </div>);
+
+        };
