@@ -15,6 +15,9 @@ export const PlayLocal: React.FC = () => {
   const { gameId } = useParams<{
     gameId: string;
   }>();
+  // Simplified mode detection from URL or state
+  const searchParams = new URLSearchParams(window.location.search);
+  const mode = (searchParams.get('mode') as 'classic' | 'shift') || 'classic';
   const navigate = useNavigate();
   const { initLocal, resetGame, engine, gameState } = useGameStore();
   const { animationsEnabled } = useSettingsStore();
@@ -22,10 +25,10 @@ export const PlayLocal: React.FC = () => {
   useEffect(() => {
     // Currently only TTT is implemented
     if (gameId === 'tic-tac-toe') {
-      initLocal(ticTacToeEngine);
+      initLocal(ticTacToeEngine, mode);
     }
     return () => resetGame();
-  }, [gameId, initLocal, resetGame]);
+  }, [gameId, initLocal, resetGame, mode]);
   if (!engine || !gameState) return null;
   const currentSlot = engine.getCurrentSlot(gameState);
   return (

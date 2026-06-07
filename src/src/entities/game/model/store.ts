@@ -16,8 +16,8 @@ interface GameStoreState<TState = any, TMove = any> {
   gameState: TState | null;
   mySlot: PlayerSlot | null; // null for local mode
 
-  initLocal: (engine: GameEngine<TState, TMove>) => void;
-  initOnline: (engine: GameEngine<TState, TMove>, mySlot: PlayerSlot) => void;
+  initLocal: (engine: GameEngine<TState, TMove>, mode?: 'classic' | 'shift') => void;
+  initOnline: (engine: GameEngine<TState, TMove>, mySlot: PlayerSlot, mode?: 'classic' | 'shift') => void;
   makeMove: (move: TMove) => void;
   resetGame: () => void;
 }
@@ -27,8 +27,8 @@ export const useGameStore = create<GameStoreState>((set, get) => {
 
   // Listen for remote moves
   transport.onMove((payload) => {
-    const { mode, engine, gameState } = get();
-    if (mode === 'online' && engine && gameState) {
+    const { mode: gameMode, engine, gameState } = get();
+    if (gameMode === 'online' && engine && gameState) {
       const nextState = engine.applyMove(gameState, payload.move, payload.slot);
       set({ gameState: nextState });
     }
@@ -42,24 +42,24 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     gameState: null,
     mySlot: null,
 
-    initLocal: (engine) => {
+    initLocal: (engine, mode = 'classic') => {
       set({
         gameId: engine.id,
         matchId: nanoid(),
         mode: 'local',
         engine,
-        gameState: engine.createInitialState(),
+        gameState: engine.createInitialState(mode as any),
         mySlot: null
       });
     },
 
-    initOnline: (engine, mySlot) => {
+    initOnline: (engine, mySlot, mode = 'classic') => {
       set({
         gameId: engine.id,
         matchId: nanoid(),
         mode: 'online',
         engine,
-        gameState: engine.createInitialState(),
+        gameState: engine.createInitialState(mode as any),
         mySlot
       });
     },

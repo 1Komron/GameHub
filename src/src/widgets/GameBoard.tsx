@@ -8,12 +8,13 @@ import type {
   TicTacToeState,
   TicTacToeMove } from
 '../entities/game/tic-tac-toe/engine';
+import type { PlayerSlot } from '../entities/game-engine/types';
 import { soundService } from '../shared/lib/sound';
 export const GameBoard: React.FC = () => {
   const { engine, gameState, makeMove, mode, mySlot } = useGameStore();
   const { animationsEnabled } = useSettingsStore();
   if (!engine || !gameState) return null;
-  const { board, winningLine } = gameState as TicTacToeState;
+  const { board, winningLine, pieceHistory, mode: gameMode } = gameState as TicTacToeState;
   const status = engine.getStatus(gameState);
   const isGameOver = status === 'won' || status === 'draw';
   const currentSlot = engine.getCurrentSlot(gameState);
@@ -53,6 +54,14 @@ export const GameBoard: React.FC = () => {
         {board.map((cell: any, index: number) => {
           const isWinningCell = winningLine?.includes(index);
           const isInteractable = canInteract && !isGameOver && cell === null;
+          
+          // Shift mode: identify oldest piece to blink
+          const isOldest = 
+            gameMode === 'shift' && 
+            cell !== null &&
+            pieceHistory[cell as PlayerSlot]?.length === 3 &&
+            pieceHistory[cell as PlayerSlot][0] === index;
+
           // Internal grid lines: right border on cols 0–1, bottom on rows 0–1.
           const hasRight = index % 3 !== 2;
           const hasBottom = index < 6;
@@ -98,7 +107,10 @@ export const GameBoard: React.FC = () => {
               }
 
               <motion.div
-                className="flex items-center justify-center w-full h-full"
+                className={cn(
+                  "flex items-center justify-center w-full h-full",
+                  isOldest && "animate-blink"
+                )}
                 whileTap={
                 isInteractable && animationsEnabled ?
                 {

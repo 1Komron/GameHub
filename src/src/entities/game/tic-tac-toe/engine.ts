@@ -11,6 +11,8 @@ export interface TicTacToeState {
   board: Cell[];
   current: PlayerSlot;
   winningLine: number[] | null;
+  pieceHistory: Record<PlayerSlot, number[]>;
+  mode?: 'classic' | 'shift';
 }
 
 export type TicTacToeMove = {index: number;};
@@ -31,10 +33,12 @@ const findWinningLine = (board: Cell[]): number[] | null => {
 export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove> = {
   id: 'tic-tac-toe',
 
-  createInitialState: (): TicTacToeState => ({
+  createInitialState: (mode: 'classic' | 'shift' = 'classic'): TicTacToeState => ({
     board: Array<Cell>(9).fill(null),
     current: 0,
-    winningLine: null
+    winningLine: null,
+    pieceHistory: { 0: [], 1: [] },
+    mode
   }),
 
   isValidMove: (state, move, slot): boolean => {
@@ -49,12 +53,26 @@ export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove> = {
   applyMove: (state, move, slot): TicTacToeState => {
     if (!ticTacToeEngine.isValidMove(state, move, slot)) return state;
     const board = [...state.board];
+    const pieceHistory = { ...state.pieceHistory, [slot]: [...state.pieceHistory[slot]] };
+    
     board[move.index] = slot;
+    pieceHistory[slot].push(move.index);
+    
+    // Enforce piece limit in shift mode
+    if (state.mode === 'shift' && pieceHistory[slot].length > 3) {
+      const oldestIndex = pieceHistory[slot].shift();
+      if (oldestIndex !== undefined) {
+        board[oldestIndex] = null;
+      }
+    }
+    
     const winningLine = findWinningLine(board);
     return {
+      ...state,
       board,
       current: (slot === 0 ? 1 : 0) as PlayerSlot,
-      winningLine
+      winningLine,
+      pieceHistory
     };
   },
 

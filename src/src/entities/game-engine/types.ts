@@ -31,7 +31,7 @@ export type MatchResult = 'win' | 'loss' | 'draw' | 'none';
 export interface GameEngine<TState, TMove> {
   readonly id: GameId;
   /** Fresh initial state for a new match. */
-  createInitialState: () => TState;
+  createInitialState: (mode?: any) => TState;
   /** Validate + apply a move, returning the next state. Never mutates input. */
   applyMove: (state: TState, move: TMove, slot: PlayerSlot) => TState;
   /** Whether a move is currently legal for the given slot. */

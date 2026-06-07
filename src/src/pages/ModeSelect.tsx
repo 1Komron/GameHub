@@ -25,9 +25,9 @@ export const ModeSelect: React.FC = () => {
   if (!game) {
     return <div className="p-4">Game not found</div>;
   }
-  const handleLocalPlay = () => {
+  const handleLocalPlay = (mode: 'classic' | 'shift') => {
     soundService.play('click');
-    navigate(`/play/local/${gameId}`);
+    navigate(`/play/local/${gameId}?mode=${mode}`);
   };
   const handleCreateRoom = async () => {
     soundService.play('click');
@@ -105,10 +105,16 @@ export const ModeSelect: React.FC = () => {
                 <p className="text-sm text-tg-hint">{t('mode.localDesc')}</p>
               </div>
             </div>
-            <Button size="lg" fullWidth onClick={handleLocalPlay}>
-              <Play className="mr-2" size={20} />
-              {t('home.play')}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button size="lg" fullWidth onClick={() => handleLocalPlay('classic')}>
+                <Play className="mr-2" size={20} />
+                {t('mode.localClassic') || 'Classic'}
+              </Button>
+              <Button size="lg" fullWidth onClick={() => handleLocalPlay('shift')} className="bg-purple-600">
+                <Play className="mr-2" size={20} />
+                {t('mode.localShift') || 'Shift Mode'}
+              </Button>
+            </div>
           </GlassCard>
         </motion.div>
 
