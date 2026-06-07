@@ -6,14 +6,14 @@ import { UserCard } from '../widgets/UserCard';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { useSettingsStore } from '../entities/settings/model/store';
-import { useStatisticsStore } from '../entities/statistics/model/store';
 import { GAME_CATALOG } from '../shared/config/games';
 import { t } from '../shared/i18n';
 import { soundService } from '../shared/lib/sound';
+
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { animationsEnabled } = useSettingsStore();
-  const { } = useStatisticsStore();
+
   const containerVariants = {
     hidden: {
       opacity: 0
@@ -77,60 +77,60 @@ export const Home: React.FC = () => {
 
       <div className="flex flex-col gap-4">
         {GAME_CATALOG.map((game) =>
-        <motion.div
-          key={game.id}
-          variants={animationsEnabled ? itemVariants : undefined}>
+          <motion.div
+            key={game.id}
+            variants={animationsEnabled ? itemVariants : undefined}>
           
             <GlassCard className="p-0 overflow-hidden flex flex-col relative group">
               <div
-              className="h-32 w-full bg-cover bg-center relative"
-              style={{
-                backgroundImage: `url(${game.imageUrl})`
-              }}>
+                className="h-32 w-full bg-cover bg-center relative"
+                style={{
+                  backgroundImage: `url(${game.imageUrl})`
+                }}>
               
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
                   <h2 className="text-xl font-bold text-white">{game.title}</h2>
                   {!game.isPlayable &&
-                <span className="text-xs font-bold uppercase tracking-wider bg-black/50 text-white px-2 py-1 rounded backdrop-blur-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider bg-black/50 text-white px-2 py-1 rounded backdrop-blur-sm">
                       {t('home.comingSoon')}
                     </span>
-                }
+                  }
                 </div>
               </div>
               <div className="p-4 flex flex-col gap-4 bg-tg-bg/50">
                 <p className="text-sm text-tg-hint">{game.description}</p>
                 <Button
-                fullWidth
-                onClick={() => handlePlay(game.id)}
-                disabled={!game.isPlayable}
-                style={
-                game.isPlayable ?
-                {
-                  backgroundColor: game.accent,
-                  color: '#fff'
-                } :
-                undefined
-                }
-                className={!game.isPlayable ? 'opacity-50' : ''}>
+                  fullWidth
+                  onClick={() => handlePlay(game.id)}
+                  disabled={!game.isPlayable}
+                  style={
+                    game.isPlayable ?
+                    {
+                      backgroundColor: game.accent,
+                      color: '#fff'
+                    } :
+                    undefined
+                  }
+                  className={!game.isPlayable ? 'opacity-50' : ''}>
                 
                   {game.isPlayable ?
-                <>
+                    <>
                       <Play className="mr-2" size={18} />
                       {t('home.play')}
                     </> :
 
-                <>
+                    <>
                       <Lock className="mr-2" size={18} />
                       {t('home.comingSoon')}
                     </>
-                }
+                  }
                 </Button>
               </div>
             </GlassCard>
           </motion.div>
         )}
       </div>
-    </motion.div>);
-
+    </motion.div>
+  );
 };

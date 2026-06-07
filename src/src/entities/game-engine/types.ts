@@ -28,10 +28,10 @@ export type MatchResult = 'win' | 'loss' | 'draw' | 'none';
  * The reusable per-game engine. Pure and serializable: state is plain data so
  * it can be synchronized over the wire for online play.
  */
-export interface GameEngine<TState, TMove> {
+export interface GameEngine<TState, TMove, TMode = string> {
   readonly id: GameId;
   /** Fresh initial state for a new match. */
-  createInitialState: (mode?: any) => TState;
+  createInitialState: (mode?: TMode) => TState;
   /** Validate + apply a move, returning the next state. Never mutates input. */
   applyMove: (state: TState, move: TMove, slot: PlayerSlot) => TState;
   /** Whether a move is currently legal for the given slot. */

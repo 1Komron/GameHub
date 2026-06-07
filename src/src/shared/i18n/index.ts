@@ -98,12 +98,12 @@ export type Language = 'en' | 'ru';
 export const t = (key: string): string => {
   const lang = useSettingsStore.getState().language || 'en';
   const keys = key.split('.');
-  let current: any = dictionary[lang as Language];
+  let current: Record<string, unknown> = dictionary[lang as Language];
 
   for (const k of keys) {
-    if (current[k] === undefined) return key;
-    current = current[k];
+    if (typeof current !== 'object' || current === null || !(k in current)) return key;
+    current = current[k] as Record<string, unknown>;
   }
 
-  return current as string;
+  return current as unknown as string;
 };

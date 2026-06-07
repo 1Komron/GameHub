@@ -10,21 +10,21 @@
     "preview": "npx vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "@emotion/react": "^11.13.3",
-    "vite": "latest",
+    "@telegram-apps/sdk-react": "latest",
     "@vitejs/plugin-react": "latest",
-    "path": "^0.12.7",
     "clsx": "latest",
-    "tailwind-merge": "latest",
-    "zustand": "latest",
     "framer-motion": "^11.5.4",
     "lucide-react": "0.522.0",
-    "react-router-dom": "^6.26.2",
-    "@telegram-apps/sdk-react": "latest",
     "nanoid": "latest",
-    "socket.io-client": "latest"
+    "path": "^0.12.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "socket.io-client": "latest",
+    "tailwind-merge": "latest",
+    "vite": "latest",
+    "zustand": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.11.18",
@@ -33,13 +33,14 @@
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "latest",
     "eslint": "^8.50.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
-    "typescript": "^5.5.4",
-    "vite": "^5.2.0",
+    "postcss": "latest",
     "tailwindcss": "3.4.17",
-    "autoprefixer": "latest",
-    "postcss": "latest"
+    "typescript": "^5.5.4",
+    "vite": "^5.2.0"
   }
 }

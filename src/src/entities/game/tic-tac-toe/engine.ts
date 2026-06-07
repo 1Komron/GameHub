@@ -7,12 +7,14 @@ import { WINNING_COMBINATIONS } from '../../../shared/constants/game';
 
 export type Cell = PlayerSlot | null;
 
+export type TicTacToeVariant = 'classic' | 'shift';
+
 export interface TicTacToeState {
   board: Cell[];
   current: PlayerSlot;
   winningLine: number[] | null;
   pieceHistory: Record<PlayerSlot, number[]>;
-  mode?: 'classic' | 'shift';
+  mode?: TicTacToeVariant;
 }
 
 export type TicTacToeMove = {index: number;};
@@ -30,10 +32,10 @@ const findWinningLine = (board: Cell[]): number[] | null => {
   return null;
 };
 
-export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove> = {
+export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove, TicTacToeVariant> = {
   id: 'tic-tac-toe',
 
-  createInitialState: (mode: 'classic' | 'shift' = 'classic'): TicTacToeState => ({
+  createInitialState: (mode: TicTacToeVariant = 'classic'): TicTacToeState => ({
     board: Array<Cell>(9).fill(null),
     current: 0,
     winningLine: null,

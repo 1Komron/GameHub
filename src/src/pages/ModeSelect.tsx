@@ -7,6 +7,7 @@ import { GlassCard } from '../shared/ui/GlassCard';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { useUserStore } from '../entities/user/model/store';
+import { GameId } from '../entities/game-engine/types';
 import { getGameById } from '../shared/config/games';
 import { t } from '../shared/i18n';
 import { soundService } from '../shared/lib/sound';
@@ -38,7 +39,7 @@ export const ModeSelect: React.FC = () => {
         photoUrl: user.photoUrl
       });
     }
-    await createRoom(gameId as any);
+    await createRoom(gameId as GameId);
     const room = useRoomStore.getState().room;
     if (room) {
       navigate(`/lobby/${room.code}`);

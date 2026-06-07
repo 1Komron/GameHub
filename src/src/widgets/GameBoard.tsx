@@ -4,7 +4,8 @@ import { useGameStore } from '../entities/game/model/store';
 import { cn } from '../shared/lib/utils';
 import type {
   TicTacToeState,
-  TicTacToeMove } from
+  TicTacToeMove,
+  Cell } from
 '../entities/game/tic-tac-toe/engine';
 import { soundService } from '../shared/lib/sound';
 import { AnimatedX } from './AnimatedX';
@@ -20,7 +21,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const boardState = gameState as TicTacToeState | null;
   const board = boardState?.board ?? [];
   const ready = Boolean(engine && gameState);
-  const status = ready ? engine!.getStatus(gameState!) : 'draw';
+  const status = (ready && engine && gameState) ? engine.getStatus(gameState) : 'draw';
   const isGameOver = status === 'won' || status === 'draw';
   const winningLine = boardState?.winningLine ?? null;
 
@@ -38,7 +39,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const pieceHistory = boardState?.pieceHistory;
 
   const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
-    ? pieceHistory[currentSlot][0]
+    ? (pieceHistory[currentSlot] ? pieceHistory[currentSlot][0] : null)
     : null;
 
   const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);
@@ -91,7 +92,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
     <LayoutGroup>
       <div className="relative w-full max-w-[360px] aspect-square mx-auto">
         <div className="grid grid-cols-3 grid-rows-3 h-full w-full rounded-2xl overflow-hidden bg-tg-bg ring-1 ring-slate-300 dark:ring-slate-600 shadow-lg relative z-10">
-          {board.map((cell: any, index: number) => {
+          {board.map((cell: Cell, index: number) => {
             const isWinningCell = winningLine?.includes(index);
             const symbolOpacity = isGameOver 
               ? (status === 'draw' ? 0.6 : (isWinningCell ? 1 : 0.45))

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { GameBoard } from '../widgets/GameBoard';
@@ -12,16 +12,17 @@ import { GlassCard } from '../shared/ui/GlassCard';
 import { ticTacToeEngine } from '../entities/game/tic-tac-toe/engine';
 import { getGameById } from '../shared/config/games';
 import { soundService } from '../shared/lib/sound';
-
 export const PlayOnline: React.FC = () => {
-  const { } = useParams<{
-    code: string;
-  }>();
   const navigate = useNavigate();
   const { initOnline, resetGame, engine, gameState, mySlot, matchId } = useGameStore();
   const { room, mySlot: roomSlot, leaveRoom } = useRoomStore();
   const { recordResult } = useStatisticsStore();
   const lastProcessedMatchIdRef = useRef<string | null>(null);
+
+  // Define status and gameOver unconditionally to satisfy rules-of-hooks
+  const status = (engine && gameState) ? engine.getStatus(gameState) : 'playing';
+  const isGameOver = status === 'won' || status === 'draw';
+  const winner = status === 'won' ? (engine && gameState ? engine.getWinner(gameState) : null) : null;
 
   useEffect(() => {
     if (!room) {
@@ -34,32 +35,30 @@ export const PlayOnline: React.FC = () => {
     return () => resetGame();
   }, [room, roomSlot, initOnline, resetGame, navigate]);
 
-  if (!engine || !gameState || !room) return null;
-  const status = engine.getStatus(gameState);
-  const isGameOver = status === 'won' || status === 'draw';
-  const winner = status === 'won' ? engine.getWinner(gameState) : null;
-
   useEffect(() => {
-    if (isGameOver && matchId && lastProcessedMatchIdRef.current !== matchId) {
+    if (isGameOver && matchId && lastProcessedMatchIdRef.current !== matchId && room) {
       lastProcessedMatchIdRef.current = matchId;
-      
-      let result = 'draw';
+
+      let result: 'win' | 'loss' | 'draw' = 'draw';
       if (status === 'won') {
         result = winner === mySlot ? 'win' : 'loss';
       }
-      
+
       if (room.gameId) {
-        recordResult(room.gameId, result as any);
+        recordResult(room.gameId, result);
       }
-      
+
       if (status === 'won') {
         soundService.play(result === 'win' ? 'win' : 'loss');
       } else {
         soundService.play('notification');
       }
     }
-  }, [isGameOver, status, winner, mySlot, room.gameId, matchId, recordResult]);
-  
+  }, [isGameOver, status, winner, mySlot, room, matchId, recordResult]);
+// ...
+
+  if (!engine || !gameState || !room) return null;
+
   const currentSlot = engine.getCurrentSlot(gameState);
   const isMyTurn = currentSlot === mySlot;
   const gameDef = getGameById(room.gameId);
@@ -118,7 +117,7 @@ export const PlayOnline: React.FC = () => {
           status={status}
           winner={winner}
           mode="online"
-          onPlayAgain={() => {}} 
+          onPlayAgain={() => { console.log('Play again'); }} 
           onBackToMenu={handleLeave}
         />
       </main>

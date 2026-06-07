@@ -6,6 +6,7 @@ import type {
   GameMode,
   PlayerSlot } from
 '../../game-engine/types';
+import type { TicTacToeState, TicTacToeMove, TicTacToeVariant } from '../tic-tac-toe/engine';
 import { getTransport } from '../../../shared/api/socket';
 
 interface GhostPiece {
@@ -13,30 +14,31 @@ interface GhostPiece {
   slot: PlayerSlot;
 }
 
-interface GameStoreState<TState = any, TMove = any> {
+interface GameStoreState<TState, TMove, TMode> {
   gameId: GameId | null;
   matchId: string | null;
   mode: GameMode | null;
-  variant: 'classic' | 'shift' | null;
-  engine: GameEngine<TState, TMove> | null;
+  variant: TMode | null;
+  engine: GameEngine<TState, TMove, TMode> | null;
   gameState: TState | null;
   mySlot: PlayerSlot | null; // null for local mode
   ghostPiece: GhostPiece | null;
 
-  initLocal: (engine: GameEngine<TState, TMove>, variant?: 'classic' | 'shift') => void;
-  initOnline: (engine: GameEngine<TState, TMove>, mySlot: PlayerSlot, variant?: 'classic' | 'shift') => void;
+  initLocal: (engine: GameEngine<TState, TMove, TMode>, variant?: TMode) => void;
+  initOnline: (engine: GameEngine<TState, TMove, TMode>, mySlot: PlayerSlot, variant?: TMode) => void;
   makeMove: (move: TMove) => void;
   resetGame: () => void;
 }
 
-export const useGameStore = create<GameStoreState>((set, get) => {
+
+export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove, TicTacToeVariant>>((set, get) => {
   const transport = getTransport();
 
   // Listen for remote moves
   transport.onMove((payload) => {
     const { mode: gameMode, engine, gameState } = get();
     if (gameMode === 'online' && engine && gameState) {
-      const nextState = engine.applyMove(gameState, payload.move, payload.slot);
+      const nextState = engine.applyMove(gameState, payload.move as TicTacToeMove, payload.slot);
       set({ gameState: nextState });
     }
   });
@@ -51,26 +53,26 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     mySlot: null,
     ghostPiece: null,
 
-    initLocal: (engine, variant = 'classic') => {
+    initLocal: (engine, variant) => {
       set({
         gameId: engine.id,
         matchId: nanoid(),
         mode: 'local',
         variant,
         engine,
-        gameState: engine.createInitialState(variant as any),
+        gameState: engine.createInitialState(variant),
         mySlot: null
       });
     },
 
-    initOnline: (engine, mySlot, variant = 'classic') => {
+    initOnline: (engine, mySlot, variant) => {
       set({
         gameId: engine.id,
         matchId: nanoid(),
         mode: 'online',
         variant,
         engine,
-        gameState: engine.createInitialState(variant as any),
+        gameState: engine.createInitialState(variant),
         mySlot
       });
     },
@@ -80,7 +82,6 @@ export const useGameStore = create<GameStoreState>((set, get) => {
       if (!engine || !gameState) return;
 
       const currentSlot = engine.getCurrentSlot(gameState);
-      const state = gameState as any;
 
       // Validation
       if (mode === 'online' && currentSlot !== mySlot) return; // Not your turn
@@ -88,9 +89,9 @@ export const useGameStore = create<GameStoreState>((set, get) => {
 
       // Check if we need to animate removal
       let ghost: GhostPiece | null = null;
-      if (variant === 'shift' && state.pieceHistory[currentSlot]?.length === 3) {
+      if (variant === 'shift' && gameState.pieceHistory[currentSlot]?.length === 3) {
         ghost = { 
-          index: state.pieceHistory[currentSlot][0],
+          index: gameState.pieceHistory[currentSlot]![0],
           slot: currentSlot
         };
       }
@@ -111,10 +112,10 @@ export const useGameStore = create<GameStoreState>((set, get) => {
 
     resetGame: () => {
       const { engine, variant } = get();
-      if (engine) {
+      if (engine && variant) {
         set({
           matchId: nanoid(),
-          gameState: engine.createInitialState(variant as any),
+          gameState: engine.createInitialState(variant),
           ghostPiece: null
         });
       }

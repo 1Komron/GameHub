@@ -7,8 +7,8 @@ class SoundService {
 
   private init() {
     if (!this.context) {
-      this.context = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      this.context = new AudioContextClass();
     }
   }
 
@@ -16,7 +16,7 @@ class SoundService {
   freq: number,
   type: OscillatorType,
   duration: number,
-  vol: number = 0.1)
+  vol = 0.1)
   {
     if (!this.context) return;
     const osc = this.context.createOscillator();

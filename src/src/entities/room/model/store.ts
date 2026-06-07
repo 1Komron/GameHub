@@ -47,9 +47,9 @@ export const useRoomStore = create<RoomState>((set) => {
       try {
         const room = await transport.createRoom(gameId);
         set({ room, mySlot: 0, isConnecting: false }); // Creator is always slot 0 (Host)
-      } catch (err: any) {
+      } catch (err: unknown) {
         set({
-          error: err.message || 'Failed to create room',
+          error: err instanceof Error ? err.message : 'Failed to create room',
           isConnecting: false
         });
       }
@@ -63,9 +63,9 @@ export const useRoomStore = create<RoomState>((set) => {
         // For our mock, the host is 0, guest is 1.
         const myPlayer = room.players.find((p) => !p.isHost);
         set({ room, mySlot: myPlayer?.slot ?? 1, isConnecting: false });
-      } catch (err: any) {
+      } catch (err: unknown) {
         set({
-          error: err.message || 'Failed to join room',
+          error: err instanceof Error ? err.message : 'Failed to join room',
           isConnecting: false
         });
       }
