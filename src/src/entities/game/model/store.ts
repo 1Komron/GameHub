@@ -12,12 +12,13 @@ interface GameStoreState<TState = any, TMove = any> {
   gameId: GameId | null;
   matchId: string | null;
   mode: GameMode | null;
+  variant: 'classic' | 'shift' | null;
   engine: GameEngine<TState, TMove> | null;
   gameState: TState | null;
   mySlot: PlayerSlot | null; // null for local mode
 
-  initLocal: (engine: GameEngine<TState, TMove>, mode?: 'classic' | 'shift') => void;
-  initOnline: (engine: GameEngine<TState, TMove>, mySlot: PlayerSlot, mode?: 'classic' | 'shift') => void;
+  initLocal: (engine: GameEngine<TState, TMove>, variant?: 'classic' | 'shift') => void;
+  initOnline: (engine: GameEngine<TState, TMove>, mySlot: PlayerSlot, variant?: 'classic' | 'shift') => void;
   makeMove: (move: TMove) => void;
   resetGame: () => void;
 }
@@ -38,28 +39,31 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     gameId: null,
     matchId: null,
     mode: null,
+    variant: null,
     engine: null,
     gameState: null,
     mySlot: null,
 
-    initLocal: (engine, mode = 'classic') => {
+    initLocal: (engine, variant = 'classic') => {
       set({
         gameId: engine.id,
         matchId: nanoid(),
         mode: 'local',
+        variant,
         engine,
-        gameState: engine.createInitialState(mode as any),
+        gameState: engine.createInitialState(variant as any),
         mySlot: null
       });
     },
 
-    initOnline: (engine, mySlot, mode = 'classic') => {
+    initOnline: (engine, mySlot, variant = 'classic') => {
       set({
         gameId: engine.id,
         matchId: nanoid(),
         mode: 'online',
+        variant,
         engine,
-        gameState: engine.createInitialState(mode as any),
+        gameState: engine.createInitialState(variant as any),
         mySlot
       });
     },
@@ -85,11 +89,11 @@ export const useGameStore = create<GameStoreState>((set, get) => {
     },
 
     resetGame: () => {
-      const { engine } = get();
+      const { engine, variant } = get();
       if (engine) {
         set({
           matchId: nanoid(),
-          gameState: engine.createInitialState()
+          gameState: engine.createInitialState(variant as any)
         });
       }
     }

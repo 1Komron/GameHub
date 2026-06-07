@@ -14,9 +14,12 @@ export const Lobby: React.FC = () => {
     code: string;
   }>();
   const navigate = useNavigate();
-  const { room, mySlot, setReady, startMatch, leaveRoom } = useRoomStore();
+  const { room, mySlot, startMatch, leaveRoom } = useRoomStore();
   const { animationsEnabled } = useSettingsStore();
   const [copied, setCopied] = useState(false);
+  // Get mode from search params
+  const searchParams = new URLSearchParams(window.location.search);
+  const mode = searchParams.get('mode') || 'classic';
   // Redirect if no room
   useEffect(() => {
     if (!room && code) {
@@ -28,22 +31,16 @@ export const Lobby: React.FC = () => {
   useEffect(() => {
     if (room?.status === 'in-progress') {
       soundService.play('notification');
-      navigate(`/play/online/${room.code}`);
+      navigate(`/play/online/${room.code}?mode=${mode}`);
     }
-  }, [room?.status, navigate]);
+  }, [room?.status, navigate, mode]);
   if (!room) return null;
   const me = room.players.find((p) => p.slot === mySlot);
   const isHost = me?.isHost;
-  const allReady =
-  room.players.length === 2 && room.players.every((p) => p.ready);
   const handleCopy = () => {
     navigator.clipboard.writeText(room.code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-  const handleToggleReady = () => {
-    soundService.play('click');
-    setReady(!me?.ready);
   };
   const handleStart = () => {
     soundService.play('click');
@@ -73,7 +70,7 @@ export const Lobby: React.FC = () => {
             {t('lobby.roomCode')}
           </span>
           <div
-            className="flex items-center gap-3 bg-tg-bg px-6 py-3 rounded-2xl cursor-pointer hover:bg-tg-secondary transition-colors"
+            className="flex items-center gap-3 bg-tg-bg px-6 py-3 rounded-2xl cursor-pointer hover:bg-tg-secondary transition-colors mb-4"
             onClick={handleCopy}>
             
             <span className="text-4xl font-mono font-bold tracking-widest text-tg-text">
@@ -85,6 +82,9 @@ export const Lobby: React.FC = () => {
             <Copy className="text-tg-hint" />
             }
           </div>
+          <span className="text-sm text-tg-hint">
+            Current Mode: <span className="font-bold text-tg-text uppercase">{mode}</span>
+          </span>
         </GlassCard>
 
         <div className="flex flex-col gap-3">
@@ -120,11 +120,6 @@ export const Lobby: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div
-                className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${player.ready ? 'bg-green-500/20 text-green-500' : 'bg-tg-hint/20 text-tg-hint'}`}>
-                
-                  {player.ready ? t('lobby.ready') : t('lobby.notReady')}
-                </div>
               </GlassCard>
             </motion.div>
           )}
@@ -152,27 +147,14 @@ export const Lobby: React.FC = () => {
         </div>
 
         <div className="mt-auto pt-6 flex flex-col gap-3">
-          {isHost ?
+          {isHost &&
           <Button
             size="lg"
             fullWidth
-            onClick={handleStart}
-            disabled={!allReady}
-            className={
-            allReady ? 'bg-green-500 text-white hover:bg-green-600' : ''
-            }>
+            onClick={handleStart}>
             
               <Play className="mr-2" size={20} />
               {t('lobby.startGame')}
-            </Button> :
-
-          <Button
-            size="lg"
-            fullWidth
-            onClick={handleToggleReady}
-            variant={me?.ready ? 'outline' : 'primary'}>
-            
-              {me?.ready ? t('lobby.notReady') : t('lobby.ready')}
             </Button>
           }
           <Button

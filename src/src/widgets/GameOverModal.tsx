@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Frown, Minus } from 'lucide-react';
@@ -16,10 +16,21 @@ export const GameOverModal: React.FC = () => {
   const { animationsEnabled } = useSettingsStore();
   const { leaveRoom } = useRoomStore();
   const lastProcessedMatchIdRef = useRef<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const status = engine && gameState ? engine.getStatus(gameState) : 'idle';
   const isGameOver = status === 'won' || status === 'draw';
   const winnerSlot = engine && gameState ? engine.getWinner(gameState) : null;
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isGameOver) {
+      timer = setTimeout(() => setShowModal(true), 2000);
+    } else {
+      setShowModal(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isGameOver]);
 
   // Record stats and play sound when game ends
   useEffect(() => {
@@ -61,7 +72,7 @@ export const GameOverModal: React.FC = () => {
       }
     }
   }, [isGameOver, status, winnerSlot, mode, mySlot, gameId, matchId, recordResult]);
-  if (!isGameOver) return null;
+  if (!isGameOver || !showModal) return null;
   const handlePlayAgain = () => {
     soundService.play('click');
     resetGame();

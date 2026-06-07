@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { GameBoard } from '../widgets/GameBoard';
-import { GameOverModal } from '../widgets/GameOverModal';
 import { useGameStore } from '../entities/game/model/store';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { Button } from '../shared/ui/Button';
@@ -76,8 +75,6 @@ export const PlayLocal: React.FC = () => {
 
         {gameId === 'tic-tac-toe' && <GameBoard />}
       </main>
-
-      <GameOverModal />
     </div>);
 
 };

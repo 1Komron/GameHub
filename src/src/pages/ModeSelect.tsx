@@ -108,11 +108,11 @@ export const ModeSelect: React.FC = () => {
             <div className="flex flex-col gap-2">
               <Button size="lg" fullWidth onClick={() => handleLocalPlay('classic')}>
                 <Play className="mr-2" size={20} />
-                {t('mode.localClassic') || 'Classic'}
+                {t('mode.localClassic')}
               </Button>
               <Button size="lg" fullWidth onClick={() => handleLocalPlay('shift')} className="bg-purple-600">
                 <Play className="mr-2" size={20} />
-                {t('mode.localShift') || 'Shift Mode'}
+                {t('mode.localShift')}
               </Button>
             </div>
           </GlassCard>
