@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Copy, Check, Play } from 'lucide-react';
+import { Copy, Check, Play } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { Avatar } from '../shared/ui/Avatar';
@@ -52,18 +52,6 @@ export const Lobby: React.FC = () => {
   };
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30">
-      <header className="flex items-center p-4 bg-tg-bg sticky top-0 z-10 border-b border-black/5 dark:border-white/5">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleLeave}
-          className="mr-2">
-          
-          <ArrowLeft size={24} />
-        </Button>
-        <h1 className="text-xl font-bold">{t('lobby.title')}</h1>
-      </header>
-
       <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6">
         <GlassCard className="flex flex-col items-center justify-center p-8 text-center">
           <span className="text-sm text-tg-hint uppercase tracking-wider mb-2">

@@ -1,16 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { GameBoard } from '../widgets/GameBoard';
 import { GameResultActions } from '../widgets/GameResultActions';
 import { useGameStore } from '../entities/game/model/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { useStatisticsStore } from '../entities/statistics/model/store';
-import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { ticTacToeEngine } from '../entities/game/tic-tac-toe/engine';
-import { getGameById } from '../shared/config/games';
 import { soundService } from '../shared/lib/sound';
 export const PlayOnline: React.FC = () => {
   const navigate = useNavigate();
@@ -55,13 +52,11 @@ export const PlayOnline: React.FC = () => {
       }
     }
   }, [isGameOver, status, winner, mySlot, room, matchId, recordResult]);
-// ...
 
   if (!engine || !gameState || !room) return null;
 
   const currentSlot = engine.getCurrentSlot(gameState);
   const isMyTurn = currentSlot === mySlot;
-  const gameDef = getGameById(room.gameId);
   const handleLeave = () => {
     leaveRoom();
     navigate('/');
@@ -69,21 +64,6 @@ export const PlayOnline: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
-      <header className="flex items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onClick={handleLeave}>
-          <ArrowLeft size={24} />
-        </Button>
-        <div className="flex flex-col items-center">
-          <h1 className="text-xl font-bold">
-            {gameDef?.title || 'Online Match'}
-          </h1>
-          <span className="text-xs text-tg-hint font-mono">
-            Room: {room.code}
-          </span>
-        </div>
-        <div className="w-10" />
-      </header>
-
       <main className="flex-1 flex flex-col items-center justify-center p-4 gap-8">
         <AnimatePresence mode="wait">
           {!isGameOver && (

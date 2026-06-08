@@ -1,14 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { GameBoard } from '../widgets/GameBoard';
 import { GameResultActions } from '../widgets/GameResultActions';
 import { useGameStore } from '../entities/game/model/store';
-import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { ticTacToeEngine } from '../entities/game/tic-tac-toe/engine';
-import { getGameById } from '../shared/config/games';
 import { soundService } from '../shared/lib/sound';
 
 export const PlayLocal: React.FC = () => {
@@ -20,7 +17,6 @@ export const PlayLocal: React.FC = () => {
   const mode = (searchParams.get('mode') as 'classic' | 'shift') || 'classic';
   const navigate = useNavigate();
   const { initLocal, resetGame, engine, gameState } = useGameStore();
-  const gameDef = getGameById(gameId || '');
 
   useEffect(() => {
     if (gameId === 'tic-tac-toe') {
@@ -36,19 +32,6 @@ export const PlayLocal: React.FC = () => {
   const currentSlot = engine.getCurrentSlot(gameState);
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
-      <header className="flex items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-          <ArrowLeft size={24} />
-        </Button>
-        <h1 className="text-xl font-bold">{gameDef?.title || 'Local Match'}</h1>
-        <Button variant="ghost" size="icon" onClick={() => {
-          soundService.play('click');
-          resetGame();
-        }}>
-          <RotateCcw size={24} />
-        </Button>
-      </header>
-
       <main className="flex-1 flex flex-col items-center justify-center p-4 gap-8">
         <AnimatePresence mode="wait">
           {!isGameOver && (
