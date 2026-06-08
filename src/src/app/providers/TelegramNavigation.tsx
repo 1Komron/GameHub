@@ -68,19 +68,25 @@ export const TelegramNavigation: React.FC = () => {
     let startY = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
+      console.log('[SWIPE] start');
       // Ignore multitouch
       if (e.touches.length !== 1) return;
 
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
+      console.log('[SWIPE] startX', startX);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      console.log('[SWIPE] end');
       const endX = e.changedTouches[0].clientX;
       const endY = e.changedTouches[0].clientY;
       
       const deltaX = endX - startX;
       const deltaY = endY - startY;
+
+      console.log('[SWIPE] deltaX', deltaX);
+      console.log('[SWIPE] deltaY', deltaY);
 
       // Logic: start from left edge, sufficient horizontal distance, mostly horizontal, vertical deviation limit
       if (
@@ -89,6 +95,7 @@ export const TelegramNavigation: React.FC = () => {
         Math.abs(deltaX) > Math.abs(deltaY) &&
         Math.abs(deltaY) <= 80
       ) {
+        console.log('[SWIPE] Triggering navigate(-1)');
         navigate(-1);
       }
     };
