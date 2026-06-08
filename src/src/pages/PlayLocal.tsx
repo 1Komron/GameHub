@@ -32,25 +32,50 @@ export const PlayLocal: React.FC = () => {
   const currentSlot = engine.getCurrentSlot(gameState);
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
-      <main className="flex-1 flex flex-col items-center p-4 gap-2">
+      <main className="flex-1 flex flex-col items-center p-4 gap-6">
         <AnimatePresence mode="wait">
-          {!isGameOver && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full"
-            >
-              <GlassCard className="flex items-center justify-center py-4 px-6">
-                <div className="flex items-center gap-3">
-                  <span className="text-tg-hint font-medium">Current Turn:</span>
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg ${currentSlot === 0 ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
-                    {currentSlot === 0 ? 'X' : 'O'}
+          {!isGameOver ? (
+              <motion.div
+                  key="turn"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="w-full"
+              >
+                <GlassCard className="flex items-center justify-center py-4 px-6">
+                  <div className="flex items-center gap-3">
+                    <span className="text-tg-hint font-medium">Current Turn:</span>
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg ${currentSlot === 0 ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
+                      {currentSlot === 0 ? 'X' : 'O'}
+                    </div>
                   </div>
-                </div>
-              </GlassCard>
-            </motion.div>
+                </GlassCard>
+              </motion.div>
+          ) : (
+              <motion.div
+                  key="result"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="w-full"
+              >
+                <GlassCard className="flex items-center justify-center py-4 px-6">
+                  <div className="flex items-center gap-3">
+                    {status === 'draw' ? (
+                        <span className="text-yellow-500 font-bold text-lg">Draw Game!</span>
+                    ) : (
+                        <>
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg ${winner === 0 ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
+                            {winner === 0 ? 'X' : 'O'}
+                          </div>
+                          <span className="text-tg-hint font-medium">
+                Player {winner === 0 ? '1 (X)' : '2 (O)'} Wins!
+              </span>
+                        </>
+                    )}
+                  </div>
+                </GlassCard>
+              </motion.div>
           )}
         </AnimatePresence>
 
