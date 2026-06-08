@@ -17,8 +17,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
         init();
 
         // If successful, mount necessary components
-        if (miniApp.mount.isAvailable()) {
-          miniApp.mount();
+        if (miniApp.mountSync.isAvailable()) {
+          miniApp.mountSync();
           miniApp.ready();
           miniApp.setBackgroundColor(themeParams.backgroundColor() || '#ffffff');
           miniApp.setHeaderColor(themeParams.backgroundColor() || '#ffffff');
