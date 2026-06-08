@@ -15,13 +15,14 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
       try {
         // Attempt to initialize the Telegram SDK
         init();
+
         // If successful, mount necessary components
         if (miniApp.mount.isAvailable()) {
           miniApp.mount();
           miniApp.ready();
           miniApp.setBackgroundColor(themeParams.backgroundColor() || '#ffffff');
           miniApp.setHeaderColor(themeParams.backgroundColor() || '#ffffff');
-          console.log('[DEBUG] miniApp mounted:', miniApp.isMounted());
+          console.log('[DEBUG] miniApp mounted');
         } else {
           console.log('[DEBUG] miniApp NOT mountable');
         }
@@ -61,9 +62,13 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
           throw new Error('No user data available');
         }
       } catch (error) {
-        console.warn(
-          'Telegram SDK initialization failed. Running in mock mode.',
+        console.error(
+          '[DIAG] Telegram init failed',
           error
+        );
+        console.error(
+          '[DIAG] stack',
+          error instanceof Error ? error.stack : error
         );
         // Fallback for web preview / outside Telegram
         setUser(

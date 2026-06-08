@@ -15,7 +15,10 @@ export const TelegramNavigation: React.FC = () => {
     const initViewport = async () => {
       try {
         if (viewport.mount.isAvailable()) {
-          viewport.mount();
+          console.log('[DIAG] viewport isMounted before mount:', viewport.isMounted());
+          await viewport.mount();
+          console.log('[DIAG] viewport isMounted after mount:', viewport.isMounted());
+
           viewport.expand();
           viewport.bindCssVars();
 
@@ -28,11 +31,10 @@ export const TelegramNavigation: React.FC = () => {
           }
         }
       } catch (e) {
-        console.error('[DEBUG] viewport init error:', e);
+        console.error('[DIAG] viewport init error:', e);
       }
     };
     initViewport();
-
     try {
       if (backButton.mount.isAvailable()) backButton.mount();
     } catch {
