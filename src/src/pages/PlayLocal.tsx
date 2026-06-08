@@ -32,7 +32,7 @@ export const PlayLocal: React.FC = () => {
   const currentSlot = engine.getCurrentSlot(gameState);
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
-      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-8">
+      <main className="flex-1 flex flex-col items-center p-4 gap-2">
         <AnimatePresence mode="wait">
           {!isGameOver && (
             <motion.div
