@@ -21,13 +21,21 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
           miniApp.ready();
           miniApp.setBackgroundColor(themeParams.backgroundColor() || '#ffffff');
           miniApp.setHeaderColor(themeParams.backgroundColor() || '#ffffff');
+          console.log('[DEBUG] miniApp mounted:', miniApp.isMounted());
+        } else {
+          console.log('[DEBUG] miniApp NOT mountable');
         }
         
         if (swipeBehavior.mount.isAvailable()) {
             swipeBehavior.mount();
-            if (swipeBehavior.disableVertical.isAvailable()) {
+            const supported = swipeBehavior.disableVertical.isAvailable();
+            console.log('[DEBUG] swipeBehavior mounted, disableVertical supported:', supported);
+            if (supported) {
                 swipeBehavior.disableVertical();
+                console.log('[DEBUG] swipeBehavior.disableVertical() called');
             }
+        } else {
+            console.log('[DEBUG] swipeBehavior NOT mountable');
         }
 
         if (themeParams.mount.isAvailable()) {

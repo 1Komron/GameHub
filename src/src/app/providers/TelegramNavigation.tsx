@@ -15,17 +15,33 @@ export const TelegramNavigation: React.FC = () => {
   const isPlayRoute = location.pathname.startsWith('/play/');
   // Mount viewport + buttons once.
   useEffect(() => {
-    try {
-      if (viewport.mount.isAvailable()) {
-        viewport.mount();
-        viewport.expand();
-        viewport.bindCssVars();
+    const initViewport = async () => {
+      try {
+        if (viewport.mount.isAvailable()) {
+          viewport.mount();
+          viewport.expand();
+          viewport.bindCssVars();
+          
+          if (viewport.requestFullscreen.isAvailable()) {
+            console.log('[DEBUG] fullscreen available');
+            await viewport.requestFullscreen();
+            console.log('[DEBUG] is fullscreen:', viewport.isFullscreen());
+          } else {
+            console.log('[DEBUG] fullscreen NOT available');
+          }
+        }
+      } catch (e) {
+        console.error('[DEBUG] viewport init error:', e);
       }
+    };
+    initViewport();
+
+    try {
       if (backButton.mount.isAvailable()) backButton.mount();
       if (mainButton.mount.isAvailable()) mainButton.mount();
     } catch {
-
-      /* Not inside Telegram — ignore. */}
+      /* Not inside Telegram — ignore. */
+    }
   }, []);
   // Back Button: visible on every screen except Home, navigates back.
   useEffect(() => {
