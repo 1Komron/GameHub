@@ -56,5 +56,51 @@ export const TelegramNavigation: React.FC = () => {
       /* no-op outside Telegram */
     }
   }, [isHome, navigate]);
+
+  // Swipe Back logic
+  useEffect(() => {
+    // Check if swipe back should be disabled on this route
+    const isGameRoute = location.pathname.startsWith('/play/local/') || location.pathname.startsWith('/play/online/');
+    const isHome = location.pathname === '/';
+    if (isGameRoute || isHome) return;
+
+    let startX = 0;
+    let startY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Ignore multitouch
+      if (e.touches.length !== 1) return;
+
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+
+      // Logic: start from left edge, sufficient horizontal distance, mostly horizontal, vertical deviation limit
+      if (
+        startX <= 30 && 
+        deltaX >= 100 && 
+        Math.abs(deltaX) > Math.abs(deltaY) &&
+        Math.abs(deltaY) <= 80
+      ) {
+        navigate(-1);
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [location.pathname, navigate]);
+
   return null;
 };

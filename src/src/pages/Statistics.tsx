@@ -1,8 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft,
   Trophy,
   Frown,
   Minus,
@@ -17,7 +15,6 @@ import { GlassCard } from '../shared/ui/GlassCard';
 import { getGameById } from '../shared/config/games';
 import { t } from '../shared/i18n';
 export const Statistics: React.FC = () => {
-  const navigate = useNavigate();
   const { games, totalGames, favoriteGame, resetStats } = useStatisticsStore();
   const { animationsEnabled } = useSettingsStore();
   const favGameDef = favoriteGame ? getGameById(favoriteGame) : null;
@@ -55,18 +52,6 @@ export const Statistics: React.FC = () => {
   };
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30">
-      <header className="flex items-center p-4 bg-tg-bg sticky top-0 z-10 border-b border-black/5 dark:border-white/5">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/')}
-          className="mr-2">
-          
-          <ArrowLeft size={24} />
-        </Button>
-        <h1 className="text-xl font-bold">{t('stats.title')}</h1>
-      </header>
-
       <motion.main
         className="flex-1 p-4 sm:p-6 flex flex-col gap-4"
         variants={animationsEnabled ? containerVariants : undefined}
