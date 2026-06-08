@@ -167,7 +167,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                   className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible"
               >
                 <defs>
-                  <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+                  <filter id="glow" filterUnits="userSpaceOnUse" x="-20" y="-20" width="140" height="140">
                     <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
                     <feMerge>
                       <feMergeNode in="coloredBlur"/>
@@ -181,7 +181,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                 <motion.path
                     d={`M ${lineCoords.x1} ${lineCoords.y1} L ${lineCoords.x2} ${lineCoords.y2}`}
                     stroke={glowColor}
-                    strokeWidth="4"
+                    strokeWidth="3.5"
                     strokeLinecap="round"
                     fill="none"
                     opacity={0.7}
