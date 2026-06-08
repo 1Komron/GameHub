@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { init, miniApp, themeParams, initData } from '@telegram-apps/sdk-react';
+import { swipeBehavior } from '@telegram-apps/sdk';
 import { useUserStore } from '../../entities/user/model/store';
 interface TelegramProviderProps {
   children: React.ReactNode;
@@ -17,9 +18,18 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
         // If successful, mount necessary components
         if (miniApp.mount.isAvailable()) {
           miniApp.mount();
+          miniApp.ready();
           miniApp.setBackgroundColor(themeParams.backgroundColor() || '#ffffff');
           miniApp.setHeaderColor(themeParams.backgroundColor() || '#ffffff');
         }
+        
+        if (swipeBehavior.mount.isAvailable()) {
+            swipeBehavior.mount();
+            if (swipeBehavior.disableVertical.isAvailable()) {
+                swipeBehavior.disableVertical();
+            }
+        }
+
         if (themeParams.mount.isAvailable()) {
           themeParams.mount();
           themeParams.bindCssVars();
