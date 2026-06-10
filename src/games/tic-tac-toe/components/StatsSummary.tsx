@@ -1,16 +1,16 @@
 import React from 'react';
-import { useStatisticsStore } from '../entities/statistics/model/store';
-import { GlassCard } from '../shared/ui/GlassCard';
-import { t } from '../shared/i18n';
+import { useStatisticsStore } from '../../../entities/statistics/model/store';
+import { GlassCard } from '../../../shared/ui/GlassCard';
+import { t } from '../../../shared/i18n';
 export const StatsSummary: React.FC = () => {
   const { games } = useStatisticsStore();
   let wins = 0;
   let losses = 0;
   let draws = 0;
   Object.values(games).forEach((stats) => {
-    wins += stats.wins;
-    losses += stats.losses;
-    draws += stats.draws;
+    wins += (stats as any).wins;
+    losses += (stats as any).losses;
+    draws += (stats as any).draws;
   });
   return (
     <div className="grid grid-cols-3 gap-3">

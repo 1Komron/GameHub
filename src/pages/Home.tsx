@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, BarChart2, Settings as SettingsIcon, Lock } from 'lucide-react';
-import { UserCard } from '../widgets/UserCard';
+import { UserCard } from '../shared/ui/UserCard';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { useSettingsStore } from '../entities/settings/model/store';

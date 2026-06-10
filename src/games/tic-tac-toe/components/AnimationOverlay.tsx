@@ -1,6 +1,6 @@
 import React from 'react';
-import { Cell } from '../entities/game/tic-tac-toe/engine';
-import { MatchStatus, PlayerSlot } from '../entities/game-engine/types';
+import { Cell } from '../engine';
+import { MatchStatus, PlayerSlot } from '../../../entities/game-engine/types';
 
 interface AnimationOverlayProps {
   isVisible: boolean;

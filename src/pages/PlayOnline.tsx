@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GameBoard } from '../widgets/GameBoard';
-import { GameResultActions } from '../widgets/GameResultActions';
-import { useGameStore } from '../entities/game/model/store';
+import { GameBoard } from '../games/tic-tac-toe/components/GameBoard';
+import { GameResultActions } from '../games/tic-tac-toe/components/GameResultActions';
+import { useGameStore } from '../games/tic-tac-toe/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { useStatisticsStore } from '../entities/statistics/model/store';
 import { GlassCard } from '../shared/ui/GlassCard';
-import { ticTacToeEngine } from '../entities/game/tic-tac-toe/engine';
+import { getEngineById } from '../shared/config/engines';
 import { soundService } from '../shared/lib/sound';
 export const PlayOnline: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +26,9 @@ export const PlayOnline: React.FC = () => {
       navigate('/');
       return;
     }
-    if (room.gameId === 'tic-tac-toe' && roomSlot !== null) {
-      initOnline(ticTacToeEngine, roomSlot);
+    const engine = getEngineById(room.gameId ?? '');
+    if (engine && roomSlot !== null) {
+      initOnline(engine, roomSlot);
     }
     return () => resetGame();
   }, [room, roomSlot, initOnline, resetGame, navigate]);

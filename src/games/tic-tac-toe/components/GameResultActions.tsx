@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Frown, Minus } from 'lucide-react';
-import { Button } from '../shared/ui/Button';
-import { MatchStatus, PlayerSlot, GameMode } from '../entities/game-engine/types';
+import { Button } from '../../../shared/ui/Button';
+import { MatchStatus, PlayerSlot, GameMode } from '../../../entities/game-engine/types';
 
 interface GameResultActionsProps {
   isVisible: boolean;

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useUserStore } from '../entities/user/model/store';
-import { useStatisticsStore } from '../entities/statistics/model/store';
-import { GlassCard } from '../shared/ui/GlassCard';
-import { Avatar } from '../shared/ui/Avatar';
-import { t } from '../shared/i18n';
+import { useUserStore } from '../../entities/user/model/store';
+import { useStatisticsStore } from '../../entities/statistics/model/store';
+import { GlassCard } from './GlassCard';
+import { Avatar } from './Avatar';
+import { t } from '../i18n';
 export const UserCard: React.FC = () => {
   const { user, isMock } = useUserStore();
   const { totalGames } = useStatisticsStore();

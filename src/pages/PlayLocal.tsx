@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GameBoard } from '../widgets/GameBoard';
-import { GameResultActions } from '../widgets/GameResultActions';
-import { useGameStore } from '../entities/game/model/store';
-import { GlassCard } from '../shared/ui/GlassCard';
-import { ticTacToeEngine } from '../entities/game/tic-tac-toe/engine';
 import { soundService } from '../shared/lib/sound';
+import { GameBoard } from '../games/tic-tac-toe/components/GameBoard';
+import { GameResultActions } from '../games/tic-tac-toe/components/GameResultActions';
+import { useGameStore } from '../games/tic-tac-toe/store';
+import { GlassCard } from '../shared/ui/GlassCard';
+import { getEngineById } from '../shared/config/engines';
 
 export const PlayLocal: React.FC = () => {
   const { gameId } = useParams<{
@@ -19,8 +19,9 @@ export const PlayLocal: React.FC = () => {
   const { initLocal, resetGame, engine, gameState } = useGameStore();
 
   useEffect(() => {
-    if (gameId === 'tic-tac-toe') {
-      initLocal(ticTacToeEngine, mode);
+    const engine = getEngineById(gameId ?? '');
+    if (engine) {
+      initLocal(engine, mode as never);
     }
     return () => resetGame();
   }, [gameId, initLocal, resetGame, mode]);

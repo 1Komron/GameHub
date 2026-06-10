@@ -2,8 +2,8 @@ import type {
   GameEngine,
   MatchStatus,
   PlayerSlot } from
-'../../game-engine/types';
-import { WINNING_COMBINATIONS } from '../../../shared/constants/game';
+'../../entities/game-engine/types';
+import { WINNING_COMBINATIONS } from '../../shared/constants/game';
 
 export type Cell = PlayerSlot | null;
 

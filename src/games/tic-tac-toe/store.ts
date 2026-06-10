@@ -5,9 +5,8 @@ import type {
   GameId,
   GameMode,
   PlayerSlot } from
-'../../game-engine/types';
-import type { TicTacToeState, TicTacToeMove, TicTacToeVariant } from '../tic-tac-toe/engine';
-import { getTransport } from '../../../shared/api/socket';
+'../../entities/game-engine/types';
+import { getTransport } from '../../shared/api/socket';
 
 interface GhostPiece {
   index: number;
@@ -31,14 +30,17 @@ interface GameStoreState<TState, TMove, TMode> {
 }
 
 
-export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove, TicTacToeVariant>>((set, get) => {
+export const useGameStore = create<GameStoreState<unknown, unknown, unknown>>((set, get) => {
   const transport = getTransport();
 
   // Listen for remote moves
   transport.onMove((payload) => {
     const { mode: gameMode, engine, gameState } = get();
     if (gameMode === 'online' && engine && gameState) {
-      const nextState = engine.applyMove(gameState, payload.move as TicTacToeMove, payload.slot);
+      // Cast payload.move back to unknown or appropriate type when applying move, 
+      // but here we must be careful. 
+      // Actually, TicTacToeMove was used here. If we switch to unknown, we need to cast.
+      const nextState = engine.applyMove(gameState, payload.move as any, payload.slot);
       set({ gameState: nextState });
     }
   });
@@ -89,9 +91,9 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
 
       // Check if we need to animate removal
       let ghost: GhostPiece | null = null;
-      if (variant === 'shift' && gameState.pieceHistory[currentSlot]?.length === 3) {
+      if (variant === 'shift' && (gameState as any).pieceHistory[currentSlot]?.length === 3) {
         ghost = { 
-          index: gameState.pieceHistory[currentSlot]![0],
+          index: (gameState as any).pieceHistory[currentSlot]![0],
           slot: currentSlot
         };
       }

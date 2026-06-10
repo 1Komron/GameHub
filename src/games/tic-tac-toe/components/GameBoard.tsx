@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
-import { useGameStore } from '../entities/game/model/store';
-import { cn } from '../shared/lib/utils';
+import { useGameStore } from '../store';
+import { cn } from '../../../shared/lib/utils';
 import type {
   TicTacToeState,
   TicTacToeMove,
   Cell } from
-      '../entities/game/tic-tac-toe/engine';
-import { soundService } from '../shared/lib/sound';
+      '../engine';
+import { soundService } from '../../../shared/lib/sound';
 import { AnimatedX } from './AnimatedX';
 import { AnimatedO } from './AnimatedO';
 
@@ -36,10 +36,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   }, [isGameOver, status, onAnimationComplete]);
 
   const currentSlot = engine && gameState ? engine.getCurrentSlot(gameState) : null;
-  const pieceHistory = boardState?.pieceHistory;
+  const pieceHistory = boardState?.pieceHistory as any;
 
-  const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
-      ? (pieceHistory[currentSlot] ? pieceHistory[currentSlot][0] : null)
+  const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot as any]?.length === 3)
+      ? (pieceHistory[currentSlot as any] ? pieceHistory[currentSlot as any][0] : null)
       : null;
 
   const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);
