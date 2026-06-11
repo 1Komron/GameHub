@@ -70,8 +70,8 @@ export const PlayLocal: React.FC = () => {
                             {winner === 0 ? 'X' : 'O'}
                           </div>
                           <span className="text-tg-hint font-medium">
-                Player {winner === 0 ? '1 (X)' : '2 (O)'} Wins!
-              </span>
+                            Player {winner === 0 ? '1 (X)' : '2 (O)'} Wins!
+                          </span>
                         </>
                     )}
                   </div>
@@ -80,9 +80,8 @@ export const PlayLocal: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {gameId === 'tic-tac-toe' && <GameBoard />}
-
-        <GameResultActions 
+        <GameBoard />
+        <GameResultActions
           isVisible={isGameOver}
           status={status}
           winner={winner}

@@ -19,6 +19,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece } = useGameStore();
 
   const boardState = gameState as TicTacToeState | null;
+  console.log('GameBoard render, board:', boardState?.board);
   const board = boardState?.board ?? [];
   const ready = Boolean(engine && gameState);
   const status = (ready && engine && gameState) ? engine.getStatus(gameState) : 'draw';
@@ -43,6 +44,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
       : null;
 
   const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);
+  console.log('canInteract debug:', { mode, currentSlot, mySlot, isGameOver, ready, canInteract });
 
   const handleCellClick = (index: number) => {
     if (!canInteract || board[index] !== null) return;
@@ -86,7 +88,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   };
 
   const winner = getWinner();
-  const glowColor = winner === 0 ? '#3b82f6' : '#ef4444';
+  const glowColor = (winner === 0 || winner === 'X') ? '#3b82f6' : '#ef4444';
 
   return (
       <LayoutGroup>
@@ -116,7 +118,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                                 style={{ opacity: symbolOpacity, transition: 'opacity 300ms ease-in-out' }}
                                 className={cn(index === oldestIndex && 'animate-blink')}
                             >
-                              {cell === 0 ? (
+                              {(cell === 0 || cell === 'X') ? (
                                   <AnimatedX className="w-12 h-12" />
                               ) : (
                                   <AnimatedO className="w-10 h-10" />
@@ -127,7 +129,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                                 style={{ opacity: symbolOpacity, transition: 'opacity 300ms ease-in-out' }}
                                 className={cn(index === oldestIndex && 'animate-blink')}
                             >
-                              {cell === 0 ? (
+                              {(cell === 0 || cell === 'X') ? (
                                   <AnimatedX className="w-12 h-12" />
                               ) : (
                                   <AnimatedO className="w-10 h-10" />

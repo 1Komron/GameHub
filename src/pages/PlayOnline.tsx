@@ -1,74 +1,46 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameBoard } from '../games/tic-tac-toe/components/GameBoard';
 import { GameResultActions } from '../games/tic-tac-toe/components/GameResultActions';
 import { useGameStore } from '../games/tic-tac-toe/store';
 import { useRoomStore } from '../entities/room/model/store';
-import { useStatisticsStore } from '../entities/statistics/model/store';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { getEngineById } from '../shared/config/engines';
-import { soundService } from '../shared/lib/sound';
 export const PlayOnline: React.FC = () => {
   const navigate = useNavigate();
-  const { initOnline, resetGame, engine, gameState, mySlot, matchId } = useGameStore();
-  const { room, mySlot: roomSlot, leaveRoom } = useRoomStore();
-  const { recordResult } = useStatisticsStore();
-  const lastProcessedMatchIdRef = useRef<string | null>(null);
-
-  // Define status and gameOver unconditionally to satisfy rules-of-hooks
-  const status = (engine && gameState) ? engine.getStatus(gameState) : 'playing';
-  const isGameOver = status === 'won' || status === 'draw';
-  const winner = status === 'won' ? (engine && gameState ? engine.getWinner(gameState) : null) : null;
+  const { initOnline, resetGame, engine, gameState, mySlot } = useGameStore();
 
   useEffect(() => {
+    const { room, mySlot: roomSlot } = useRoomStore.getState();
     if (!room) {
       navigate('/');
       return;
     }
-    const engine = getEngineById(room.gameId ?? '');
-    if (engine && roomSlot !== null) {
-      initOnline(engine, roomSlot);
+    const gameEngine = getEngineById(room.gameId ?? '');
+    if (gameEngine && roomSlot !== null) {
+      initOnline(gameEngine, roomSlot);
     }
     return () => resetGame();
-  }, [room, roomSlot, initOnline, resetGame, navigate]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (isGameOver && matchId && lastProcessedMatchIdRef.current !== matchId && room) {
-      lastProcessedMatchIdRef.current = matchId;
-
-      let result: 'win' | 'loss' | 'draw' = 'draw';
-      if (status === 'won') {
-        result = winner === mySlot ? 'win' : 'loss';
-      }
-
-      if (room.gameId) {
-        recordResult(room.gameId, result);
-      }
-
-      if (status === 'won') {
-        soundService.play(result === 'win' ? 'win' : 'loss');
-      } else {
-        soundService.play('notification');
-      }
-    }
-  }, [isGameOver, status, winner, mySlot, room, matchId, recordResult]);
-
-  if (!engine || !gameState || !room) return null;
+  if (!engine || !gameState) return null;
 
   const currentSlot = engine.getCurrentSlot(gameState);
   const isMyTurn = currentSlot === mySlot;
-  const handleLeave = () => {
-    leaveRoom();
-    navigate('/');
-  };
+  const status = engine.getStatus(gameState);
+  const isGameOver = status === 'won' || status === 'draw';
+  const winner = status === 'won' ? engine.getWinner(gameState) : null;
+  const normalizedWinner = winner === 'X' ? 0 : winner === 'O' ? 1 : (winner as number | null);
+  const iWon = normalizedWinner === mySlot;
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
-      <main className="flex-1 flex flex-col items-center p-4 gap-2">
+      <main className="flex-1 flex flex-col items-center p-4 gap-3">
         <AnimatePresence mode="wait">
-          {!isGameOver && (
+          {!isGameOver ? (
             <motion.div
+              key="turn"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -89,17 +61,43 @@ export const PlayOnline: React.FC = () => {
                 </div>
               </GlassCard>
             </motion.div>
+          ) : (
+            <motion.div
+              key="result"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full"
+            >
+              <GlassCard className="flex items-center justify-center py-4 px-6">
+                <div className="flex items-center gap-3">
+                  {status === 'draw' ? (
+                    <span className="text-yellow-500 font-bold text-lg">Draw Game!</span>
+                  ) : (
+                    <>
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg ${(normalizedWinner === 0) ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
+                        {normalizedWinner === 0 ? 'X' : 'O'}
+                      </div>
+                      <span className="text-tg-hint font-medium">
+                        {iWon ? 'You Win!' : `Player ${normalizedWinner === 0 ? 'X' : 'O'} Wins!`}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </GlassCard>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        {room.gameId === 'tic-tac-toe' && <GameBoard />}
-        <GameResultActions 
+        <GameBoard />
+        <GameResultActions
           isVisible={isGameOver}
           status={status}
-          winner={winner}
+          winner={iWon ? mySlot : (mySlot === 0 ? 1 : 0) as any}
           mode="online"
-          onPlayAgain={() => { console.log('Play again'); }} 
-          onBackToMenu={handleLeave}
+          isWinner={iWon}
+          onPlayAgain={() => {}}
+          onBackToMenu={() => { resetGame(); useRoomStore.getState().leaveRoom(); navigate('/'); }}
         />
       </main>
     </div>

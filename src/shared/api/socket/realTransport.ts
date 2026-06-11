@@ -1,90 +1,209 @@
-import { io, type Socket } from 'socket.io-client';
 import type { GameTransport, LocalIdentity, Unsubscribe } from './transport';
 import type {
   RoomSnapshot,
   MovePayload,
-  ClientToServerEvents,
-  ServerToClientEvents } from
-'./events';
+  RoomStatus,
+} from './events';
 import type { GameId } from '../../../entities/game-engine/types';
-import { SOCKET_URL } from '../../config/socket';
+import { API_URL, WS_URL } from '../../config/socket';
+import { authHeaders } from '../auth/authService';
 
 /**
- * Production transport backed by socket.io-client. Wire-compatible with a
- * Spring Boot / Socket.IO gateway implementing the event contracts in
- * events.ts. Selected automatically when USE_MOCK_TRANSPORT is false.
+ * Production transport using native WebSockets + REST API.
+ * Wire-compatible with Spring Boot backend.
  */
 export class RealSocketTransport implements GameTransport {
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
-  null;
+  private ws: WebSocket | null = null;
+  private matchId: string | null = null;
 
-  connect(identity: LocalIdentity): void {
-    this.socket = io(SOCKET_URL, {
-      autoConnect: true,
-      transports: ['websocket'],
-      auth: identity
-    });
+  private roomUpdateListeners: ((room: RoomSnapshot) => void)[] = [];
+  private matchStartListeners: ((room: RoomSnapshot) => void)[] = [];
+  private moveListeners: ((payload: MovePayload) => void)[] = [];
+  private errorListeners: ((message: string) => void)[] = [];
+
+  connect(_identity: LocalIdentity): void {
+    // Auth is handled separately via loginWithTelegram in TelegramProvider
   }
 
   disconnect(): void {
-    this.socket?.disconnect();
-    this.socket = null;
+    this.leaveRoom();
   }
 
   isConnected(): boolean {
-    return this.socket?.connected ?? false;
+    return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
   }
 
-  createRoom(gameId: GameId): Promise<RoomSnapshot> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) return reject(new Error('Not connected'));
-      this.socket.emit('room:create', gameId, (room) => resolve(room));
+  async createRoom(gameId: GameId): Promise<RoomSnapshot> {
+    const response = await fetch(`${API_URL}/api/matches`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ gameCode: toGameCode(gameId) }),
     });
+
+    if (!response.ok) throw new Error('Failed to create match');
+    const result = await response.json();
+    const match = result.data;
+    this.matchId = match.matchId;
+    this.openWebSocket(match.matchId);
+
+    return {
+      code: match.joinCode,
+      gameId,
+      players: [],
+      status: 'waiting',
+    };
   }
 
-  joinRoom(code: string): Promise<RoomSnapshot> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) return reject(new Error('Not connected'));
-      this.socket.emit('room:join', code, (result) => {
-        if ('error' in result) reject(new Error(result.error));else
-        resolve(result);
-      });
+  async joinRoom(code: string): Promise<RoomSnapshot> {
+    const response = await fetch(`${API_URL}/api/matches/join/${code}`, {
+      method: 'POST',
+      headers: authHeaders(),
     });
+
+    if (!response.ok) throw new Error('Failed to join match');
+    const result = await response.json();
+    const match = result.data;
+    this.matchId = match.matchId;
+    this.openWebSocket(match.matchId);
+
+    return matchViewToSnapshot(match);
   }
 
   leaveRoom(): void {
-    this.socket?.emit('room:leave');
+    this.ws?.close();
+    this.ws = null;
+    this.matchId = null;
   }
 
-  setReady(ready: boolean): void {
-    this.socket?.emit('room:ready', ready);
+  setReady(_ready: boolean): void {
+    if (!this.matchId) return;
+    fetch(`${API_URL}/api/matches/${this.matchId}/ready`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
   }
 
   startMatch(): void {
-    this.socket?.emit('room:start');
+    // Backend auto-starts when second player joins
   }
 
   sendMove(payload: MovePayload): void {
-    this.socket?.emit('game:move', payload);
+    if (!this.matchId) return;
+    const move = payload.move as any;
+    fetch(`${API_URL}/api/matches/${this.matchId}/moves`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ cell: move.index }),
+    });
   }
 
   onRoomUpdate(cb: (room: RoomSnapshot) => void): Unsubscribe {
-    this.socket?.on('room:update', cb);
-    return () => this.socket?.off('room:update', cb);
+    this.roomUpdateListeners.push(cb);
+    return () => {
+      this.roomUpdateListeners = this.roomUpdateListeners.filter((l) => l !== cb);
+    };
   }
 
   onMatchStart(cb: (room: RoomSnapshot) => void): Unsubscribe {
-    this.socket?.on('room:start', cb);
-    return () => this.socket?.off('room:start', cb);
+    this.matchStartListeners.push(cb);
+    return () => {
+      this.matchStartListeners = this.matchStartListeners.filter((l) => l !== cb);
+    };
   }
 
   onMove(cb: (payload: MovePayload) => void): Unsubscribe {
-    this.socket?.on('game:move', cb);
-    return () => this.socket?.off('game:move', cb);
+    this.moveListeners.push(cb);
+    return () => {
+      this.moveListeners = this.moveListeners.filter((l) => l !== cb);
+    };
   }
 
   onError(cb: (message: string) => void): Unsubscribe {
-    this.socket?.on('room:error', cb);
-    return () => this.socket?.off('room:error', cb);
+    this.errorListeners.push(cb);
+    return () => {
+      this.errorListeners = this.errorListeners.filter((l) => l !== cb);
+    };
   }
+
+  private openWebSocket(matchId: string) {
+    this.ws = new WebSocket(`${WS_URL}/ws/matches/${matchId}`);
+
+    this.ws.onmessage = async (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'PLAYER_JOINED' || msg.type === 'PLAYER_READY') {
+        const match = await this.fetchMatch(matchId);
+        const snapshot = matchViewToSnapshot(match);
+        this.roomUpdateListeners.forEach((l) => l(snapshot));
+        if (match.status === 'ACTIVE') {
+          this.matchStartListeners.forEach((cb) => cb(snapshot));
+        }
+      } else if (msg.type === 'MATCH_UPDATED' || msg.type === 'MATCH_FINISHED') {
+        const match = await this.fetchMatch(matchId);
+        const snapshot = matchViewToSnapshot(match);
+        
+        if (msg.type === 'MATCH_FINISHED') {
+          snapshot.status = 'finished';
+        }
+        
+        this.roomUpdateListeners.forEach((l) => l(snapshot));
+
+        // emit move so game board updates
+        if (msg.state) {
+          // currentSeat in msg.state is NEXT player's turn
+          // so previous player (who just moved) is the opposite
+          const whoJustMoved = msg.state.currentSeat === 0 ? 1 : 0;
+          this.moveListeners.forEach((l) =>
+            l({
+              slot: whoJustMoved,
+              move: msg.state,
+            })
+          );
+        }
+      }
+    };
+
+    this.ws.onerror = () => {
+      this.errorListeners.forEach((l) => l('WebSocket error'));
+    };
+  }
+
+  private async fetchMatch(matchId: string) {
+    const response = await fetch(`${API_URL}/api/matches/${matchId}`, {
+      headers: authHeaders(),
+    });
+    const result = await response.json();
+    console.log('fetchMatch result:', result); // добавь это
+    return result.data;
+  }
+}
+
+function toGameCode(gameId: GameId): string {
+  return gameId.toUpperCase().replace(/-/g, '_');
+}
+
+function toRoomStatus(status: string): RoomStatus {
+  if (status === 'ACTIVE') return 'in-progress';
+  if (status === 'FINISHED') return 'finished';
+  return 'waiting';
+}
+
+function toGameId(gameCode: string): GameId {
+  return gameCode.toLowerCase().replace(/_/g, '-') as GameId;
+}
+
+function matchViewToSnapshot(match: any): RoomSnapshot {
+  console.log('matchViewToSnapshot input:', match);
+  return {
+    code: match.joinCode ?? '',
+    gameId: toGameId(match.gameCode),
+    status: toRoomStatus(match.status),
+    players: (match.players ?? []).map((p: any) => ({
+      id: String(p.userId),
+      name: String(p.userId),
+      slot: p.seat,
+      ready: false,
+      isHost: p.seat === 0,
+    })),
+  };
 }

@@ -35,13 +35,15 @@ export const useGameStore = create<GameStoreState<unknown, unknown, unknown>>((s
 
   // Listen for remote moves
   transport.onMove((payload) => {
-    const { mode: gameMode, engine, gameState } = get();
-    if (gameMode === 'online' && engine && gameState) {
-      // Cast payload.move back to unknown or appropriate type when applying move, 
-      // but here we must be careful. 
-      // Actually, TicTacToeMove was used here. If we switch to unknown, we need to cast.
-      const nextState = engine.applyMove(gameState, payload.move as any, payload.slot);
-      set({ gameState: nextState });
+    const { mode: gameMode } = get();
+    if (gameMode === 'online') {
+      const backendState = payload.move as any;
+      set({ gameState: {
+        ...backendState,
+        current: backendState.currentSeat,
+        winningLine: backendState.winnerPosition ?? null,
+        pieceHistory: { 0: [], 1: [] },
+      }});
     }
   });
 
@@ -89,26 +91,26 @@ export const useGameStore = create<GameStoreState<unknown, unknown, unknown>>((s
       if (mode === 'online' && currentSlot !== mySlot) return; // Not your turn
       if (!engine.isValidMove(gameState, move, currentSlot)) return;
 
-      // Check if we need to animate removal
-      let ghost: GhostPiece | null = null;
-      if (variant === 'shift' && (gameState as any).pieceHistory[currentSlot]?.length === 3) {
-        ghost = { 
-          index: (gameState as any).pieceHistory[currentSlot]![0],
-          slot: currentSlot
-        };
-      }
-
-      // Apply locally immediately
-      const nextState = engine.applyMove(gameState, move, currentSlot);
-      set({ gameState: nextState, ghostPiece: ghost });
-
-      if (ghost) {
-        setTimeout(() => set({ ghostPiece: null }), 300);
-      }
-
-      // Broadcast if online
       if (mode === 'online') {
+        // Online mode: just send to backend, wait for WebSocket update
         transport.sendMove({ slot: currentSlot, move });
+      } else {
+        // Local mode: apply immediately with ghost piece support
+        let ghost: GhostPiece | null = null;
+        if (variant === 'shift' && (gameState as any).pieceHistory[currentSlot]?.length === 3) {
+          ghost = { 
+            index: (gameState as any).pieceHistory[currentSlot]![0],
+            slot: currentSlot
+          };
+        }
+
+        // Apply locally immediately
+        const nextState = engine.applyMove(gameState, move, currentSlot);
+        set({ gameState: nextState, ghostPiece: ghost });
+
+        if (ghost) {
+          setTimeout(() => set({ ghostPiece: null }), 300);
+        }
       }
     },
 

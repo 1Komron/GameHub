@@ -9,6 +9,7 @@ interface GameResultActionsProps {
   status: MatchStatus;
   winner: PlayerSlot | null;
   mode: GameMode;
+  isWinner?: boolean;
   onPlayAgain: () => void;
   onBackToMenu: () => void;
 }
@@ -18,6 +19,7 @@ export const GameResultActions: React.FC<GameResultActionsProps> = ({
   status,
   winner,
   mode,
+  isWinner,
   onPlayAgain,
   onBackToMenu,
 }) => {
@@ -42,11 +44,11 @@ export const GameResultActions: React.FC<GameResultActionsProps> = ({
     );
   } else {
     // Online mode
-    const isWinner = winner !== null; // Simplified logic, assuming winner is determined
-    title = isWinner ? 'You Won!' : 'You Lost';
+    const didWin = isWinner ?? (winner !== null);
+    title = didWin ? 'You Won!' : 'You Lost';
     icon = (
-      <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${isWinner ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-        {isWinner ? <Trophy size={40} /> : <Frown size={40} />}
+      <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${didWin ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+        {didWin ? <Trophy size={40} /> : <Frown size={40} />}
       </div>
     );
   }

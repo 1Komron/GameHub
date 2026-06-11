@@ -4,6 +4,7 @@ import type { GameId, PlayerSlot } from '../../game-engine/types';
 import type { LocalIdentity } from '../../../shared/api/socket/transport';
 
 interface RoomState {
+  matchId: string | null;
   room: RoomSnapshot | null;
   mySlot: PlayerSlot | null;
   error: string | null;
@@ -26,11 +27,16 @@ export const useRoomStore = create<RoomState>((set) => {
     set({ room });
   });
 
+  transport.onMatchStart((room) => {
+    set({ room });
+  });
+
   transport.onError((error) => {
     set({ error, isConnecting: false });
   });
 
   return {
+    matchId: null,
     room: null,
     mySlot: null,
     error: null,
@@ -46,7 +52,8 @@ export const useRoomStore = create<RoomState>((set) => {
       set({ isConnecting: true, error: null });
       try {
         const room = await transport.createRoom(gameId);
-        set({ room, mySlot: 0, isConnecting: false }); // Creator is always slot 0 (Host)
+        const matchId = (transport as any).matchId;
+        set({ room, mySlot: 0, isConnecting: false, matchId });
       } catch (err: unknown) {
         set({
           error: err instanceof Error ? err.message : 'Failed to create room',
@@ -59,10 +66,9 @@ export const useRoomStore = create<RoomState>((set) => {
       set({ isConnecting: true, error: null });
       try {
         const room = await transport.joinRoom(code);
-        // Assuming the second player to join gets slot 1. In a real app, the server assigns this and returns it.
-        // For our mock, the host is 0, guest is 1.
+        const matchId = (transport as any).matchId;
         const myPlayer = room.players.find((p) => !p.isHost);
-        set({ room, mySlot: myPlayer?.slot ?? 1, isConnecting: false });
+        set({ room, mySlot: myPlayer?.slot ?? 1, isConnecting: false, matchId });
       } catch (err: unknown) {
         set({
           error: err instanceof Error ? err.message : 'Failed to join room',
@@ -81,7 +87,7 @@ export const useRoomStore = create<RoomState>((set) => {
 
     leaveRoom: () => {
       transport.leaveRoom();
-      set({ room: null, mySlot: null });
+      set({ room: null, mySlot: null, matchId: null });
     },
 
     clearError: () => set({ error: null })

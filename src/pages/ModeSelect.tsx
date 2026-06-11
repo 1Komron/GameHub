@@ -40,9 +40,9 @@ export const ModeSelect: React.FC = () => {
       });
     }
     await createRoom(gameId as GameId);
-    const room = useRoomStore.getState().room;
-    if (room) {
-      navigate(`/lobby/${room.code}`);
+    const { room, matchId } = useRoomStore.getState();
+    if (room && matchId) {
+      navigate(`/lobby/${matchId}`);
     }
   };
   const handleJoinRoom = async () => {
@@ -56,9 +56,9 @@ export const ModeSelect: React.FC = () => {
       });
     }
     await joinRoom(joinCode.trim().toUpperCase());
-    const room = useRoomStore.getState().room;
-    if (room) {
-      navigate(`/lobby/${room.code}`);
+    const { room, matchId } = useRoomStore.getState();
+    if (room && matchId) {
+      navigate(`/lobby/${matchId}`);
     }
   };
   return (

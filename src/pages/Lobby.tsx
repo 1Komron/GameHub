@@ -22,10 +22,12 @@ export const Lobby: React.FC = () => {
   const mode = searchParams.get('mode') || 'classic';
   // Redirect if no room
   useEffect(() => {
-    if (!room && code) {
-      // In a real app, we might try to join here if arriving via deep link
-      navigate('/');
-    }
+    const timer = setTimeout(() => {
+      if (!room && code) {
+        navigate('/');
+      }
+    }, 500); // small delay to allow store to update
+    return () => clearTimeout(timer);
   }, [room, code, navigate]);
   // Navigate to play when match starts
   useEffect(() => {
@@ -73,6 +75,9 @@ export const Lobby: React.FC = () => {
           <span className="text-sm text-tg-hint">
             Current Mode: <span className="font-bold text-tg-text uppercase">{mode}</span>
           </span>
+          <span className="text-sm text-tg-hint mt-1">
+            Game: <span className="font-bold text-tg-text">{room.gameId?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </span>
         </GlassCard>
 
         <div className="flex flex-col gap-3">
@@ -108,6 +113,9 @@ export const Lobby: React.FC = () => {
                     </p>
                   </div>
                 </div>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded ${player.slot === 0 ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
+                  {player.slot === 0 ? 'X' : 'O'}
+                </span>
               </GlassCard>
             </motion.div>
           )}
@@ -134,7 +142,7 @@ export const Lobby: React.FC = () => {
           }
         </div>
 
-        <div className="mt-auto pt-6 flex flex-col gap-3">
+        <div className="mt-6 flex flex-col gap-3">
           {isHost &&
           <Button
             size="lg"
