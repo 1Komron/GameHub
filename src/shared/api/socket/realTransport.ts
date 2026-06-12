@@ -70,6 +70,12 @@ export class RealSocketTransport implements GameTransport {
   }
 
   leaveRoom(): void {
+    if (this.matchId) {
+      fetch(`${API_URL}/api/matches/${this.matchId}/leave`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+    }
     this.ws?.close();
     this.ws = null;
     this.matchId = null;
@@ -84,7 +90,11 @@ export class RealSocketTransport implements GameTransport {
   }
 
   startMatch(): void {
-    // Backend auto-starts when second player joins
+    if (!this.matchId) return;
+    fetch(`${API_URL}/api/matches/${this.matchId}/start`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
   }
 
   sendMove(payload: MovePayload): void {
@@ -138,6 +148,24 @@ export class RealSocketTransport implements GameTransport {
         if (match.status === 'ACTIVE') {
           this.matchStartListeners.forEach((cb) => cb(snapshot));
         }
+      } else if (msg.type === 'MATCH_STARTED') {
+        const match = await this.fetchMatch(matchId);
+        const snapshot = matchViewToSnapshot(match);
+        this.roomUpdateListeners.forEach(l => l(snapshot));
+        this.matchStartListeners.forEach(cb => cb(snapshot));
+      } else if (msg.type === 'PLAYER_LEFT') {
+        const match = await this.fetchMatch(matchId);
+        const snapshot = matchViewToSnapshot(match);
+        this.roomUpdateListeners.forEach(l => l(snapshot));
+      } else if (msg.type === 'MATCH_CANCELLED') {
+        // Host left — notify remaining player
+        this.errorListeners.forEach(cb => cb('Host left the room'));
+        this.roomUpdateListeners.forEach(l => l({
+          code: '',
+          gameId: 'tic-tac-toe',
+          status: 'finished',
+          players: [],
+        }));
       } else if (msg.type === 'MATCH_UPDATED' || msg.type === 'MATCH_FINISHED') {
         const match = await this.fetchMatch(matchId);
         const snapshot = matchViewToSnapshot(match);
@@ -202,7 +230,7 @@ function matchViewToSnapshot(match: any): RoomSnapshot {
       id: String(p.userId),
       name: String(p.userId),
       slot: p.seat,
-      ready: false,
+      ready: p.isReady ?? false,
       isHost: p.seat === 0,
     })),
   };

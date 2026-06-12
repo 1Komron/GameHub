@@ -97,7 +97,15 @@ export const PlayOnline: React.FC = () => {
           mode="online"
           isWinner={iWon}
           onPlayAgain={() => {}}
-          onBackToMenu={() => { resetGame(); useRoomStore.getState().leaveRoom(); navigate('/'); }}
+          onBackToMenu={() => {
+            resetGame();
+            if (!isGameOver) {
+              useRoomStore.getState().leaveRoom();
+            } else {
+              useRoomStore.setState({ room: null, mySlot: null, matchId: null });
+            }
+            navigate('/');
+          }}
         />
       </main>
     </div>

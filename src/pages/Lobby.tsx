@@ -14,7 +14,7 @@ export const Lobby: React.FC = () => {
     code: string;
   }>();
   const navigate = useNavigate();
-  const { room, mySlot, startMatch, leaveRoom } = useRoomStore();
+  const { room, mySlot, startMatch, leaveRoom, error } = useRoomStore();
   const { animationsEnabled } = useSettingsStore();
   const [copied, setCopied] = useState(false);
   // Get mode from search params
@@ -29,6 +29,13 @@ export const Lobby: React.FC = () => {
     }, 500); // small delay to allow store to update
     return () => clearTimeout(timer);
   }, [room, code, navigate]);
+
+  useEffect(() => {
+    if (room?.status === 'finished') {
+      navigate('/');
+    }
+  }, [room?.status, navigate]);
+
   // Navigate to play when match starts
   useEffect(() => {
     if (room?.status === 'in-progress') {
@@ -39,11 +46,22 @@ export const Lobby: React.FC = () => {
   if (!room) return null;
   const me = room.players.find((p) => p.slot === mySlot);
   const isHost = me?.isHost;
+  const isReady = me?.ready || false;
+
+  const opponent = room.players.find((p) => p.slot !== mySlot);
+  const canStart = isHost && room.players.length === 2 && room.players.every(p => p.ready === true);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(room.code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const handleReady = () => {
+    soundService.play('click');
+    useRoomStore.getState().setReady(true);
+  };
+
   const handleStart = () => {
     soundService.play('click');
     startMatch();
@@ -55,6 +73,11 @@ export const Lobby: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30">
       <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6">
+        {error && (
+          <div className="p-3 bg-red-500/10 text-red-500 rounded-lg text-sm text-center">
+            {error}
+          </div>
+        )}
         <GlassCard className="flex flex-col items-center justify-center p-8 text-center">
           <span className="text-sm text-tg-hint uppercase tracking-wider mb-2">
             {t('lobby.roomCode')}
@@ -109,7 +132,7 @@ export const Lobby: React.FC = () => {
                       {player.name} {player.id === me?.id && '(You)'}
                     </p>
                     <p className="text-xs text-tg-hint">
-                      {player.isHost ? 'Host' : 'Guest'}
+                      {player.isHost ? 'Host' : 'Guest'} {player.ready ? '✓ Ready' : ''}
                     </p>
                   </div>
                 </div>
@@ -143,22 +166,31 @@ export const Lobby: React.FC = () => {
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
-          {isHost &&
-          <Button
-            size="lg"
-            fullWidth
-            onClick={handleStart}>
-            
-              <Play className="mr-2" size={20} />
-              {t('lobby.startGame')}
+          {!isReady && (
+            <Button size="lg" fullWidth onClick={handleReady}>
+              Ready!
             </Button>
-          }
+          )}
+          {isReady && !isHost && (
+            <Button size="lg" fullWidth disabled>
+              Waiting for host...
+            </Button>
+          )}
+          {isHost && (
+            <Button
+              size="lg"
+              fullWidth
+              onClick={handleStart}
+              disabled={!canStart}>
+              <Play className="mr-2" size={20} />
+              {canStart ? 'Start Game!' : 'Waiting for players...'}
+            </Button>
+          )}
           <Button
             variant="ghost"
             fullWidth
             onClick={handleLeave}
             className="text-red-500">
-            
             {t('lobby.leaveRoom')}
           </Button>
         </div>
