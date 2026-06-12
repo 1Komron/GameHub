@@ -37,10 +37,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   }, [isGameOver, status, onAnimationComplete]);
 
   const currentSlot = engine && gameState ? engine.getCurrentSlot(gameState) : null;
-  const pieceHistory = boardState?.pieceHistory as any;
+  const pieceHistory = boardState?.pieceHistory;
 
-  const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot as any]?.length === 3)
-      ? (pieceHistory[currentSlot as any] ? pieceHistory[currentSlot as any][0] : null)
+  const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
+      ? (pieceHistory?.[currentSlot]?.[0] ?? null)
       : null;
 
   const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);

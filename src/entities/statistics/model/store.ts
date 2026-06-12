@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameId, MatchResult } from '../../game-engine/types';
 
-interface GameStats {
+export interface GameStats {
   wins: number;
   losses: number;
   draws: number;

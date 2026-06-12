@@ -52,7 +52,7 @@ export const useRoomStore = create<RoomState>((set) => {
       set({ isConnecting: true, error: null });
       try {
         const room = await transport.createRoom(gameId);
-        const matchId = (transport as any).matchId;
+        const matchId = transport.getMatchId();
         set({ room, mySlot: 0, isConnecting: false, matchId });
       } catch (err: unknown) {
         set({
@@ -66,7 +66,7 @@ export const useRoomStore = create<RoomState>((set) => {
       set({ isConnecting: true, error: null });
       try {
         const room = await transport.joinRoom(code);
-        const matchId = (transport as any).matchId;
+        const matchId = transport.getMatchId();
         const myPlayer = room.players.find((p) => !p.isHost);
         set({ room, mySlot: myPlayer?.slot ?? 1, isConnecting: false, matchId });
       } catch (err: unknown) {

@@ -93,10 +93,12 @@ export const PlayOnline: React.FC = () => {
         <GameResultActions
           isVisible={isGameOver}
           status={status}
-          winner={iWon ? mySlot : (mySlot === 0 ? 1 : 0) as any}
+          winner={mySlot !== null ? (iWon ? mySlot : (mySlot === 0 ? 1 : 0)) : null}
           mode="online"
           isWinner={iWon}
-          onPlayAgain={() => {}}
+          onPlayAgain={() => {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+          }}
           onBackToMenu={() => {
             resetGame();
             if (!isGameOver) {

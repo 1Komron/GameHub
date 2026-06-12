@@ -47,6 +47,10 @@ export class MockTransport implements GameTransport {
     return this.connected;
   }
 
+  getMatchId(): string | null {
+    return this.room ? this.room.code : null;
+  }
+
   private emitRoom(): void {
     if (this.room) {
       const snapshot = structuredClone(this.room);

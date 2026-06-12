@@ -7,6 +7,7 @@ import type {
   PlayerSlot } from
 '../../entities/game-engine/types';
 import { getTransport } from '../../shared/api/socket';
+import type { TicTacToeState, TicTacToeMove, TicTacToeVariant } from './engine';
 
 interface GhostPiece {
   index: number;
@@ -30,19 +31,26 @@ interface GameStoreState<TState, TMove, TMode> {
 }
 
 
-export const useGameStore = create<GameStoreState<unknown, unknown, unknown>>((set, get) => {
+export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove, TicTacToeVariant>>((set, get) => {
   const transport = getTransport();
 
   // Listen for remote moves
   transport.onMove((payload) => {
     const { mode: gameMode } = get();
     if (gameMode === 'online') {
-      const backendState = payload.move as any;
+      const backendState = payload.move as { 
+        board: import('./engine').Cell[];
+        currentSeat: PlayerSlot;
+        winnerPosition: number[] | null;
+        pieceHistory: Record<PlayerSlot, number[]>;
+        mode: import('./engine').TicTacToeVariant;
+      };
       set({ gameState: {
-        ...backendState,
+        board: backendState.board,
         current: backendState.currentSeat,
         winningLine: backendState.winnerPosition ?? null,
-        pieceHistory: { 0: [], 1: [] },
+        pieceHistory: { 0: backendState.pieceHistory?.[0] ?? [], 1: backendState.pieceHistory?.[1] ?? [] },
+        mode: backendState.mode,
       }});
     }
   });
@@ -97,11 +105,14 @@ export const useGameStore = create<GameStoreState<unknown, unknown, unknown>>((s
       } else {
         // Local mode: apply immediately with ghost piece support
         let ghost: GhostPiece | null = null;
-        if (variant === 'shift' && (gameState as any).pieceHistory[currentSlot]?.length === 3) {
-          ghost = { 
-            index: (gameState as any).pieceHistory[currentSlot]![0],
-            slot: currentSlot
-          };
+        if (variant === 'shift' && gameState.pieceHistory[currentSlot]?.length === 3) {
+          const history = gameState.pieceHistory[currentSlot];
+          if (history && history.length > 0) {
+            ghost = { 
+              index: history[0],
+              slot: currentSlot
+            };
+          }
         }
 
         // Apply locally immediately

@@ -18,6 +18,7 @@ export interface GameTransport {
   connect: (identity: LocalIdentity) => void;
   disconnect: () => void;
   isConnected: () => boolean;
+  getMatchId: () => string | null;
 
   createRoom: (gameId: GameId) => Promise<RoomSnapshot>;
   joinRoom: (code: string) => Promise<RoomSnapshot>;

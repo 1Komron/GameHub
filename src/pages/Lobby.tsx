@@ -42,13 +42,12 @@ export const Lobby: React.FC = () => {
       soundService.play('notification');
       navigate(`/play/online/${room.code}?mode=${mode}`);
     }
-  }, [room?.status, navigate, mode]);
+  }, [room?.status, room?.code, navigate, mode]);
   if (!room) return null;
   const me = room.players.find((p) => p.slot === mySlot);
   const isHost = me?.isHost;
   const isReady = me?.ready || false;
 
-  const opponent = room.players.find((p) => p.slot !== mySlot);
   const canStart = isHost && room.players.length === 2 && room.players.every(p => p.ready === true);
 
   const handleCopy = () => {

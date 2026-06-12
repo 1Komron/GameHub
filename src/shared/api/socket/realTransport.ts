@@ -21,7 +21,9 @@ export class RealSocketTransport implements GameTransport {
   private moveListeners: ((payload: MovePayload) => void)[] = [];
   private errorListeners: ((message: string) => void)[] = [];
 
-  connect(_identity: LocalIdentity): void {
+  connect(_unused: LocalIdentity): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _ = _unused;
     // Auth is handled separately via loginWithTelegram in TelegramProvider
   }
 
@@ -31,6 +33,10 @@ export class RealSocketTransport implements GameTransport {
 
   isConnected(): boolean {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  getMatchId(): string | null {
+    return this.matchId;
   }
 
   async createRoom(gameId: GameId): Promise<RoomSnapshot> {
@@ -81,7 +87,9 @@ export class RealSocketTransport implements GameTransport {
     this.matchId = null;
   }
 
-  setReady(_ready: boolean): void {
+  setReady(_unused: boolean): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _ = _unused;
     if (!this.matchId) return;
     fetch(`${API_URL}/api/matches/${this.matchId}/ready`, {
       method: 'POST',
@@ -99,7 +107,7 @@ export class RealSocketTransport implements GameTransport {
 
   sendMove(payload: MovePayload): void {
     if (!this.matchId) return;
-    const move = payload.move as any;
+    const move = payload.move as { index: number };
     fetch(`${API_URL}/api/matches/${this.matchId}/moves`, {
       method: 'POST',
       headers: authHeaders(),
@@ -220,16 +228,21 @@ function toGameId(gameCode: string): GameId {
   return gameCode.toLowerCase().replace(/_/g, '-') as GameId;
 }
 
-function matchViewToSnapshot(match: any): RoomSnapshot {
+function matchViewToSnapshot(match: {
+  joinCode?: string;
+  gameCode: string;
+  status: string;
+  players?: { userId: number; seat: number; isReady?: boolean }[];
+}): RoomSnapshot {
   console.log('matchViewToSnapshot input:', match);
   return {
     code: match.joinCode ?? '',
     gameId: toGameId(match.gameCode),
     status: toRoomStatus(match.status),
-    players: (match.players ?? []).map((p: any) => ({
+    players: (match.players ?? []).map((p) => ({
       id: String(p.userId),
       name: String(p.userId),
-      slot: p.seat,
+      slot: (p.seat === 0 ? 0 : 1) as import('../../../entities/game-engine/types').PlayerSlot,
       ready: p.isReady ?? false,
       isHost: p.seat === 0,
     })),
