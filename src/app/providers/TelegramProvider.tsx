@@ -4,21 +4,6 @@ import {swipeBehavior} from '@telegram-apps/sdk';
 import {useUserStore} from '../../entities/user/model/store';
 import {loginWithTelegram} from '../../shared/api/auth/authService';
 
-interface TelegramWebApp {
-    initData?: string;
-    initDataUnsafe?: {
-        user?: {
-            id: number;
-            first_name: string;
-            last_name?: string;
-            username?: string;
-            language_code?: string;
-            is_premium?: boolean;
-            photo_url?: string;
-        };
-    };
-}
-
 interface TelegramProviderProps {
     children: React.ReactNode;
 }
@@ -58,26 +43,61 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     themeParams.bindCssVars();
                 }
 
-                // Use lp.initData for user
-                // The type of initData in lp is complex. Accessing user safely.
-                const initData = (lp as { initData?: { user?: { 
-                    id: number, 
-                    first_name: string, 
-                    last_name?: string, 
-                    username?: string, 
-                    language_code?: string, 
-                    is_premium?: boolean, 
-                    photo_url?: string 
+                // Попытка 1: из SDK
+                let initDataRaw = lp.initDataRaw;
+
+                // Попытка 2: из window.Telegram.WebApp
+                if (!initDataRaw) {
+                    const tgWebApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
+                    if (tgWebApp?.initData) {
+                        initDataRaw = tgWebApp.initData;
+                    }
+                }
+
+                // Попытка 3: вручную из URL hash (работает на платформе 'web')
+                if (!initDataRaw) {
+                    const hash = window.location.hash.slice(1); // убираем '#'
+                    const params = new URLSearchParams(hash);
+                    const tgWebAppData = params.get('tgWebAppData');
+                    if (tgWebAppData) {
+                        initDataRaw = decodeURIComponent(tgWebAppData);
+                    }
+                }
+
+                // DEV fallback
+                if (!initDataRaw && import.meta.env.DEV) {
+                    initDataRaw = import.meta.env.VITE_DEV_INIT_DATA;
+                }
+
+                // Попытка 1: из SDK
+                const sdkInitData = (lp as { initData?: { user?: {
+                    id: number;
+                    first_name: string;
+                    last_name?: string;
+                    username?: string;
+                    language_code?: string;
+                    is_premium?: boolean;
+                    photo_url?: string;
                 } } }).initData;
 
-                // Fallback: parse user from window.Telegram.WebApp.initDataUnsafe
-                const tgWebApp = (window as Window & { Telegram?: { WebApp?: TelegramWebApp } }).Telegram?.WebApp;
-                const user = initData?.user ?? tgWebApp?.initDataUnsafe?.user;
+                let user = sdkInitData?.user;
 
-                // Improved retrieval of initDataRaw
-                const initDataRaw = lp.initDataRaw 
-                    ?? tgWebApp?.initData 
-                    ?? (import.meta.env.DEV ? import.meta.env.VITE_DEV_INIT_DATA : undefined);
+                // Попытка 2: распарсить из initDataRaw
+                if (!user && initDataRaw) {
+                    try {
+                        const parsed = new URLSearchParams(initDataRaw);
+                        const userJson = parsed.get('user');
+                        if (userJson) {
+                            user = JSON.parse(decodeURIComponent(userJson));
+                        }
+                    } catch {
+                        // ignore parse error
+                    }
+                }
+
+                // Logging for verification
+                console.log('[DIAG] Final initDataRaw', initDataRaw);
+                console.log('[DIAG] Final user', user);
 
                 if (user) {
                     setUser(
