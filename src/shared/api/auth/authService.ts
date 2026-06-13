@@ -16,7 +16,9 @@ export const loginWithTelegram = async (initData: string): Promise<void> => {
     }
 
     const result = await response.json();
+    console.log('[DIAG] AUTH RESPONSE', result);
     jwtToken = result.data.accessToken;
+    console.log('[DIAG] JWT TOKEN', jwtToken);
 };
 
 export const getToken = (): string | null => jwtToken;

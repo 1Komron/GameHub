@@ -47,6 +47,13 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
                     themeParams.bindCssVars();
                 }
                 // Get user data
+                console.log('[DIAG] rawInitData:', initData.raw());
+                console.log('[DIAG] user:', initData.user());
+                console.log('[DIAG] window.Telegram.WebApp.initDataUnsafe:', (window as any).Telegram?.WebApp?.initDataUnsafe);
+                console.log('[DIAG] window.Telegram.WebApp.initData:', (window as any).Telegram?.WebApp?.initData);
+                console.log('[DIAG] location.hash:', window.location.hash);
+                console.log('[DIAG] href:', window.location.href);
+                console.log('[DIAG] search:', window.location.search);
                 const user = initData.user();
                 if (user) {
                     setUser(

@@ -38,6 +38,7 @@ export class RealSocketTransport implements GameTransport {
   }
 
   async createRoom(gameId: GameId): Promise<RoomSnapshot> {
+    console.log('[DIAG] Authorization Header:', authHeaders()['Authorization']);
     const response = await fetch(`${API_URL}/api/matches`, {
       method: 'POST',
       headers: authHeaders(),
