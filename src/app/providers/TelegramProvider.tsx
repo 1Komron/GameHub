@@ -83,12 +83,20 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                 let user = sdkInitData?.user;
 
                 // Попытка 2: распарсить из initDataRaw
-                if (!user && initDataRaw) {
+                if (!user && typeof initDataRaw === 'string') {
                     try {
                         const parsed = new URLSearchParams(initDataRaw);
                         const userJson = parsed.get('user');
                         if (userJson) {
-                            user = JSON.parse(decodeURIComponent(userJson));
+                            user = JSON.parse(decodeURIComponent(userJson)) as {
+                                id: number;
+                                first_name: string;
+                                last_name?: string;
+                                username?: string;
+                                language_code?: string;
+                                is_premium?: boolean;
+                                photo_url?: string;
+                            };
                         }
                     } catch {
                         // ignore parse error
@@ -113,7 +121,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                         false
                     );
 
-                    if (initDataRaw) {
+                    if (typeof initDataRaw === 'string') {
                         await loginWithTelegram(initDataRaw);
                     } else {
                         // eslint-disable-next-line no-console
