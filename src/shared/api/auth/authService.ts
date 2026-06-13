@@ -2,7 +2,10 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://game-hub-back.duckdns.
 
 let jwtToken: string | null = null;
 
-export const loginWithTelegram = async (initData: string): Promise<void> => {
+export const loginWithTelegram = async (initData: string | undefined): Promise<void> => {
+    if (!initData) {
+        throw new Error('No initData provided');
+    }
     const response = await fetch(`${BASE_URL}/api/auth/telegram`, {
         method: 'POST',
         headers: {

@@ -56,6 +56,10 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                 } } }).initData;
                 
                 const user = initData?.user;
+
+                // Improved retrieval of initDataRaw
+                const initDataRaw = lp.initDataRaw ?? (import.meta.env.DEV ? import.meta.env.VITE_DEV_INIT_DATA : undefined);
+
                 if (user) {
                     setUser(
                         {
@@ -70,17 +74,22 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                         false
                     );
 
-                    const rawInitData = lp.initDataRaw;
-                    if (typeof rawInitData === 'string') {
-                        await loginWithTelegram(rawInitData);
+                    if (initDataRaw) {
+                        await loginWithTelegram(initDataRaw);
+                    } else {
+                        console.warn('[AUTH] initDataRaw not available, skipping Telegram auth');
                     }
                 } else {
-                    throw new Error('No user data available');
+                    console.warn('[AUTH] No user data available, skipping Telegram auth');
                 }
             } catch (error) {
                 console.error('[DIAG] Telegram init failed', error);
 
-                // Fallback for web preview / outside Telegram
+                // Fallback for web preview / outside Telegram (only if explicitly desired or for testing)
+                // If you want to force guest login in dev, you might keep this.
+                // Based on instructions, we want to avoid 400s.
+                // Assuming we still want to set a guest user without calling loginWithTelegram (or with mock data)
+                
                 setUser(
                     {
                         id: 1,
@@ -91,8 +100,13 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     true
                 );
                 
+                // If we absolutely need to call loginWithTelegram here, wrap it in try/catch or check initData
+                // The original code was doing it unconditionally.
+                // Let's comment it out to stop 400s if it's failing.
+                /*
                 const mockId = Math.floor(Math.random() * 900000000) + 100000000;
                 await loginWithTelegram(`user=%7B%22id%22%3A${mockId}%2C%22first_name%22%3A%22Guest%22%2C%22username%22%3A%22guest_${mockId}%22%7D&hash=test`);
+                */
 
                 // Apply default theme variables manually if not in Telegram
                 document.documentElement.style.setProperty('--tg-theme-bg-color', '#ffffff');
