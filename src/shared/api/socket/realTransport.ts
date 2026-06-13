@@ -1,4 +1,4 @@
-import type { GameTransport, LocalIdentity, Unsubscribe } from './transport';
+import type { GameTransport, Unsubscribe } from './transport';
 import type {
   RoomSnapshot,
   MovePayload,
@@ -21,7 +21,7 @@ export class RealSocketTransport implements GameTransport {
   private moveListeners: ((payload: MovePayload) => void)[] = [];
   private errorListeners: ((message: string) => void)[] = [];
 
-  connect(_identity: LocalIdentity): void {
+  connect(): void {
     // Auth is handled separately via loginWithTelegram in TelegramProvider
   }
 
@@ -85,7 +85,7 @@ export class RealSocketTransport implements GameTransport {
     this.matchId = null;
   }
 
-  setReady(_ready: boolean): void {
+  setReady(): void {
     if (!this.matchId) return;
     fetch(`${API_URL}/api/matches/${this.matchId}/ready`, {
       method: 'POST',
@@ -183,7 +183,7 @@ export class RealSocketTransport implements GameTransport {
         // emit move so game board updates
         if (msg.state) {
           // Normalization: 'X' -> 0, 'O' -> 1
-          const normalizedBoard = (msg.state.board || []).map((c: any) => {
+          const normalizedBoard = (msg.state.board as ('X' | 'O' | null)[] || []).map((c) => {
             if (c === 'X') return 0;
             if (c === 'O') return 1;
             return null;
