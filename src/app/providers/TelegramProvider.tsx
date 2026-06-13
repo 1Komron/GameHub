@@ -4,6 +4,17 @@ import {swipeBehavior} from '@telegram-apps/sdk';
 import {useUserStore} from '../../entities/user/model/store';
 import {loginWithTelegram} from '../../shared/api/auth/authService';
 
+declare global {
+    interface Window {
+        Telegram?: {
+            WebApp?: {
+                initData?: string;
+                initDataUnsafe?: unknown;
+            };
+        };
+    }
+}
+
 interface TelegramProviderProps {
     children: React.ReactNode;
 }
@@ -49,8 +60,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({
                 // Get user data
                 console.log('[DIAG] rawInitData:', initData.raw());
                 console.log('[DIAG] user:', initData.user());
-                console.log('[DIAG] window.Telegram.WebApp.initDataUnsafe:', (window as any).Telegram?.WebApp?.initDataUnsafe);
-                console.log('[DIAG] window.Telegram.WebApp.initData:', (window as any).Telegram?.WebApp?.initData);
+                console.log('[DIAG] window.Telegram.WebApp.initDataUnsafe:', window.Telegram?.WebApp?.initDataUnsafe);
+                console.log('[DIAG] window.Telegram.WebApp.initData:', window.Telegram?.WebApp?.initData);
                 console.log('[DIAG] location.hash:', window.location.hash);
                 console.log('[DIAG] href:', window.location.href);
                 console.log('[DIAG] search:', window.location.search);
