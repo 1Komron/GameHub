@@ -7,6 +7,7 @@ import { GameResultActions } from '../games/tic-tac-toe/components/GameResultAct
 import { useGameStore } from '../games/tic-tac-toe/store';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { getEngineById } from '../shared/config/engines';
+import { TicTacToeState, TicTacToeMove, TicTacToeVariant } from '../games/tic-tac-toe/engine';
 
 export const PlayLocal: React.FC = () => {
   const { gameId } = useParams<{
@@ -19,7 +20,7 @@ export const PlayLocal: React.FC = () => {
   const { initLocal, resetGame, engine, gameState } = useGameStore();
 
   useEffect(() => {
-    const engine = getEngineById(gameId ?? '');
+    const engine = getEngineById<TicTacToeState, TicTacToeMove, TicTacToeVariant>(gameId ?? '');
     if (engine) {
       initLocal(engine, mode as never);
     }

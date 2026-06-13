@@ -21,9 +21,7 @@ export class RealSocketTransport implements GameTransport {
   private moveListeners: ((payload: MovePayload) => void)[] = [];
   private errorListeners: ((message: string) => void)[] = [];
 
-  connect(_unused: LocalIdentity): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = _unused;
+  connect(_identity: LocalIdentity): void {
     // Auth is handled separately via loginWithTelegram in TelegramProvider
   }
 
@@ -87,9 +85,7 @@ export class RealSocketTransport implements GameTransport {
     this.matchId = null;
   }
 
-  setReady(_unused: boolean): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = _unused;
+  setReady(_ready: boolean): void {
     if (!this.matchId) return;
     fetch(`${API_URL}/api/matches/${this.matchId}/ready`, {
       method: 'POST',
@@ -186,13 +182,23 @@ export class RealSocketTransport implements GameTransport {
 
         // emit move so game board updates
         if (msg.state) {
+          // Normalization: 'X' -> 0, 'O' -> 1
+          const normalizedBoard = (msg.state.board || []).map((c: any) => {
+            if (c === 'X') return 0;
+            if (c === 'O') return 1;
+            return null;
+          });
+
           // currentSeat in msg.state is NEXT player's turn
           // so previous player (who just moved) is the opposite
           const whoJustMoved = msg.state.currentSeat === 0 ? 1 : 0;
           this.moveListeners.forEach((l) =>
             l({
               slot: whoJustMoved,
-              move: msg.state,
+              move: {
+                ...msg.state,
+                board: normalizedBoard
+              },
             })
           );
         }

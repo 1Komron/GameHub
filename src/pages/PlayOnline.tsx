@@ -7,6 +7,8 @@ import { useGameStore } from '../games/tic-tac-toe/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { getEngineById } from '../shared/config/engines';
+import { TicTacToeState, TicTacToeMove, TicTacToeVariant } from '../games/tic-tac-toe/engine';
+
 export const PlayOnline: React.FC = () => {
   const navigate = useNavigate();
   const { initOnline, resetGame, engine, gameState, mySlot } = useGameStore();
@@ -17,7 +19,7 @@ export const PlayOnline: React.FC = () => {
       navigate('/');
       return;
     }
-    const gameEngine = getEngineById(room.gameId ?? '');
+    const gameEngine = getEngineById<TicTacToeState, TicTacToeMove, TicTacToeVariant>(room.gameId ?? '');
     if (gameEngine && roomSlot !== null) {
       initOnline(gameEngine, roomSlot);
     }
@@ -31,8 +33,7 @@ export const PlayOnline: React.FC = () => {
   const status = engine.getStatus(gameState);
   const isGameOver = status === 'won' || status === 'draw';
   const winner = status === 'won' ? engine.getWinner(gameState) : null;
-  const normalizedWinner = winner === 'X' ? 0 : winner === 'O' ? 1 : (winner as number | null);
-  const iWon = normalizedWinner === mySlot;
+  const iWon = winner === mySlot;
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
@@ -75,11 +76,11 @@ export const PlayOnline: React.FC = () => {
                     <span className="text-yellow-500 font-bold text-lg">Draw Game!</span>
                   ) : (
                     <>
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg ${(normalizedWinner === 0) ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
-                        {normalizedWinner === 0 ? 'X' : 'O'}
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg ${(winner === 0) ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
+                        {winner === 0 ? 'X' : 'O'}
                       </div>
                       <span className="text-tg-hint font-medium">
-                        {iWon ? 'You Win!' : `Player ${normalizedWinner === 0 ? 'X' : 'O'} Wins!`}
+                        {iWon ? 'You Win!' : `Player ${winner === 0 ? 'X' : 'O'} Wins!`}
                       </span>
                     </>
                   )}

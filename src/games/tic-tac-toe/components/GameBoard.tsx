@@ -88,7 +88,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   };
 
   const winner = getWinner();
-  const glowColor = (winner === 0 || winner === 'X') ? '#3b82f6' : '#ef4444';
+  const glowColor = (winner === 0) ? '#3b82f6' : '#ef4444';
 
   return (
       <LayoutGroup>
@@ -118,7 +118,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                                 style={{ opacity: symbolOpacity, transition: 'opacity 300ms ease-in-out' }}
                                 className={cn(index === oldestIndex && 'animate-blink')}
                             >
-                              {(cell === 0 || cell === 'X') ? (
+                              {cell === 0 ? (
                                   <AnimatedX className="w-12 h-12" />
                               ) : (
                                   <AnimatedO className="w-10 h-10" />
@@ -129,7 +129,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                                 style={{ opacity: symbolOpacity, transition: 'opacity 300ms ease-in-out' }}
                                 className={cn(index === oldestIndex && 'animate-blink')}
                             >
-                              {(cell === 0 || cell === 'X') ? (
+                              {cell === 0 ? (
                                   <AnimatedX className="w-12 h-12" />
                               ) : (
                                   <AnimatedO className="w-10 h-10" />
