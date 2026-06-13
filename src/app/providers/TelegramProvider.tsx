@@ -4,6 +4,21 @@ import {swipeBehavior} from '@telegram-apps/sdk';
 import {useUserStore} from '../../entities/user/model/store';
 import {loginWithTelegram} from '../../shared/api/auth/authService';
 
+interface TelegramWebApp {
+    initData?: string;
+    initDataUnsafe?: {
+        user?: {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+            language_code?: string;
+            is_premium?: boolean;
+            photo_url?: string;
+        };
+    };
+}
+
 interface TelegramProviderProps {
     children: React.ReactNode;
 }
@@ -38,8 +53,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     }
                 }
 
-                if (themeParams.mount.isAvailable()) {
-                    themeParams.mount();
+                if (themeParams.mountSync.isAvailable()) {
+                    themeParams.mountSync();
                     themeParams.bindCssVars();
                 }
 
@@ -54,11 +69,15 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     is_premium?: boolean, 
                     photo_url?: string 
                 } } }).initData;
-                
-                const user = initData?.user;
+
+                // Fallback: parse user from window.Telegram.WebApp.initDataUnsafe
+                const tgWebApp = (window as Window & { Telegram?: { WebApp?: TelegramWebApp } }).Telegram?.WebApp;
+                const user = initData?.user ?? tgWebApp?.initDataUnsafe?.user;
 
                 // Improved retrieval of initDataRaw
-                const initDataRaw = lp.initDataRaw ?? (import.meta.env.DEV ? import.meta.env.VITE_DEV_INIT_DATA : undefined);
+                const initDataRaw = lp.initDataRaw 
+                    ?? tgWebApp?.initData 
+                    ?? (import.meta.env.DEV ? import.meta.env.VITE_DEV_INIT_DATA : undefined);
 
                 if (user) {
                     setUser(
@@ -77,9 +96,11 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     if (initDataRaw) {
                         await loginWithTelegram(initDataRaw);
                     } else {
+                        // eslint-disable-next-line no-console
                         console.warn('[AUTH] initDataRaw not available, skipping Telegram auth');
                     }
                 } else {
+                    // eslint-disable-next-line no-console
                     console.warn('[AUTH] No user data available, skipping Telegram auth');
                 }
             } catch (error) {
@@ -127,7 +148,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                 setIsInitialized(true);
             }
         };
-        initTelegram();
+        initTelegram().catch(console.error);
     }, [setUser]);
     
     if (!isInitialized) {
