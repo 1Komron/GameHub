@@ -60,7 +60,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     const params = new URLSearchParams(hash);
                     const tgWebAppData = params.get('tgWebAppData');
                     if (tgWebAppData) {
-                        initDataRaw = decodeURIComponent(tgWebAppData);
+                        initDataRaw = tgWebAppData; // оставляем URL-encoded как есть
                     }
                 }
 
