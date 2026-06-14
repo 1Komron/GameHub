@@ -141,6 +141,14 @@ export class RealSocketTransport implements GameTransport {
   }
 
   private openWebSocket(matchId: string) {
+    if (this.ws) {
+      console.log('[Socket] Closing existing WebSocket before opening new one');
+      this.ws.onmessage = null;
+      this.ws.onerror = null;
+      this.ws.close();
+      this.ws = null;
+    }
+
     this.ws = new WebSocket(`${WS_URL}/ws/matches/${matchId}`);
 
     this.ws.onmessage = async (event) => {

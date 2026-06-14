@@ -33,27 +33,43 @@ interface GameStoreState<TState, TMove, TMode> {
 
 export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove, TicTacToeVariant>>((set, get) => {
   const transport = getTransport();
+  let moveUnsubscribe: (() => void) | null = null;
 
-  // Listen for remote moves
-  transport.onMove((payload) => {
-    const { mode: gameMode } = get();
-    if (gameMode === 'online') {
-      const backendState = payload.move as { 
-        board: import('./engine').Cell[];
-        currentSeat: PlayerSlot;
-        winnerPosition: number[] | null;
-        pieceHistory: Record<PlayerSlot, number[]>;
-        mode: import('./engine').TicTacToeVariant;
-      };
-      set({ gameState: {
-        board: backendState.board,
-        current: backendState.currentSeat,
-        winningLine: backendState.winnerPosition ?? null,
-        pieceHistory: { 0: backendState.pieceHistory?.[0] ?? [], 1: backendState.pieceHistory?.[1] ?? [] },
-        mode: backendState.mode,
-      }});
-    }
-  });
+  // Cleanup and setup listener
+  const setupListener = () => {
+    if (moveUnsubscribe) moveUnsubscribe();
+    moveUnsubscribe = transport.onMove((payload) => {
+      const { mode: gameMode, gameState: currentGameState } = get();
+      if (gameMode === 'online') {
+        const backendState = payload.move as {
+          board: import('./engine').Cell[];
+          currentSeat: PlayerSlot;
+          winnerPosition: number[] | null;
+          pieceHistory: Record<PlayerSlot, number[]>;
+          mode: import('./engine').TicTacToeVariant;
+        };
+
+        const nextGameState: TicTacToeState = {
+          board: backendState.board,
+          current: backendState.currentSeat,
+          winningLine: backendState.winnerPosition ?? null,
+          pieceHistory: { 0: backendState.pieceHistory?.[0] ?? [], 1: backendState.pieceHistory?.[1] ?? [] },
+          mode: backendState.mode,
+        };
+
+        // Reconciliation: Only update if the backend state differs from our local optimistic state
+        const isSameBoard = currentGameState?.board.every((cell, i) => cell === nextGameState.board[i]);
+        const isSameTurn = currentGameState?.current === nextGameState.current;
+        const isSameWinningLine = JSON.stringify(currentGameState?.winningLine) === JSON.stringify(nextGameState.winningLine);
+
+        if (!isSameBoard || !isSameTurn || !isSameWinningLine) {
+          set({ gameState: nextGameState });
+        }
+      }
+    });
+  };
+
+  setupListener();
 
   return {
     gameId: null,
@@ -99,29 +115,29 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
       if (mode === 'online' && currentSlot !== mySlot) return; // Not your turn
       if (!engine.isValidMove(gameState, move, currentSlot)) return;
 
+      // Handle ghost piece for 'shift' mode
+      let ghost: GhostPiece | null = null;
+      if (variant === 'shift' && gameState.pieceHistory[currentSlot]?.length === 3) {
+        const history = gameState.pieceHistory[currentSlot];
+        if (history && history.length > 0) {
+          ghost = { 
+            index: history[0],
+            slot: currentSlot
+          };
+        }
+      }
+
+      // Apply locally immediately (Optimistic Update for online mode)
+      const nextState = engine.applyMove(gameState, move, currentSlot);
+      set({ gameState: nextState, ghostPiece: ghost });
+
+      if (ghost) {
+        setTimeout(() => set({ ghostPiece: null }), 300);
+      }
+
       if (mode === 'online') {
-        // Online mode: just send to backend, wait for WebSocket update
+        // Concurrently send to backend
         transport.sendMove({ slot: currentSlot, move });
-      } else {
-        // Local mode: apply immediately with ghost piece support
-        let ghost: GhostPiece | null = null;
-        if (variant === 'shift' && gameState.pieceHistory[currentSlot]?.length === 3) {
-          const history = gameState.pieceHistory[currentSlot];
-          if (history && history.length > 0) {
-            ghost = { 
-              index: history[0],
-              slot: currentSlot
-            };
-          }
-        }
-
-        // Apply locally immediately
-        const nextState = engine.applyMove(gameState, move, currentSlot);
-        set({ gameState: nextState, ghostPiece: ghost });
-
-        if (ghost) {
-          setTimeout(() => set({ ghostPiece: null }), 300);
-        }
       }
     },
 
