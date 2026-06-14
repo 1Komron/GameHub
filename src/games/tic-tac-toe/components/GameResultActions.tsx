@@ -1,16 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Frown, Minus } from 'lucide-react';
-import { Button } from '../../../shared/ui/Button';
+import { cn } from '../../../shared/lib/utils';
 import { MatchStatus, PlayerSlot, GameMode } from '../../../entities/game-engine/types';
 
 interface GameResultActionsProps {
   isVisible: boolean;
   status: MatchStatus;
   winner: PlayerSlot | null;
-  mode: GameMode;
   isWinner?: boolean;
-  onPlayAgain: () => void;
+  mode: GameMode;
+  onPlayAgain?: () => void;
   onBackToMenu: () => void;
 }
 
@@ -18,63 +17,61 @@ export const GameResultActions: React.FC<GameResultActionsProps> = ({
   isVisible,
   status,
   winner,
-  mode,
   isWinner,
+  mode,
   onPlayAgain,
   onBackToMenu,
 }) => {
   if (!isVisible) return null;
 
-  let title = '';
-  let icon = null;
-
-  if (status === 'draw') {
-    title = 'Draw Game';
-    icon = (
-      <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mb-4 text-yellow-500">
-        <Minus size={40} />
-      </div>
-    );
-  } else if (mode === 'local') {
-    title = `Player ${winner === 0 ? 'X' : 'O'} Wins!`;
-    icon = (
-      <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${winner === 0 ? 'bg-blue-500/20 text-blue-500' : 'bg-red-500/20 text-red-500'}`}>
-        <Trophy size={40} />
-      </div>
-    );
-  } else {
-    // Online mode
-    const didWin = isWinner ?? (winner !== null);
-    title = didWin ? 'You Won!' : 'You Lost';
-    icon = (
-      <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${didWin ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-        {didWin ? <Trophy size={40} /> : <Frown size={40} />}
-      </div>
-    );
-  }
+  const isDraw = status === 'draw';
+  const isWinnerMe = mode === 'online' ? isWinner : (winner !== null);
+  const colorClass = isWinnerMe ? 'text-emerald-400' : isDraw ? 'text-amber-400' : 'text-red-400';
+  const title = isDraw ? 'Draw Game' : (mode === 'online' ? (isWinnerMe ? 'You Won!' : 'You Lost') : `Player ${winner === 0 ? 'X' : 'O'} Wins!`);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center mt-2 w-full max-w-sm px-4"
+      transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+      className="flex flex-col items-center gap-6 w-full max-w-sm px-4 mt-4"
     >
-      {icon}
-      <h2 className="text-3xl font-bold text-tg-text mb-8">{title}</h2>
-      <div className="flex flex-col gap-3 w-full">
+      <div className="flex flex-col items-center gap-4 w-full pt-2">
+        {/* Holographic Glitch Title */}
+        <motion.h2 
+          animate={{
+            x: [0, -1.5, 1.5, -1, 1, 0],
+            opacity: [1, 0.92, 1, 0.88, 1, 1]
+          }}
+          transition={{
+            duration: 0.35,
+            ease: "easeInOut",
+            repeat: 0
+          }}
+          className={cn("text-3xl font-extrabold tracking-wider text-center uppercase", colorClass)}
+        >
+          {title}
+        </motion.h2>
+      </div>
+
+      {/* Styled Action Buttons */}
+      <div className="flex flex-col gap-4 w-full pt-2">
         {mode === 'local' && (
-          <Button onClick={onPlayAgain} size="lg" fullWidth>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={onPlayAgain}
+            className="w-full py-4 bg-white/[0.05] hover:bg-white/[0.1] text-white font-semibold rounded-2xl border border-white/[0.1] backdrop-blur-md transition-all duration-200"
+          >
             Play Again
-          </Button>
+          </motion.button>
         )}
-        <Button
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={onBackToMenu}
-          variant={mode === 'local' ? 'secondary' : 'primary'}
-          size="lg"
-          fullWidth
+          className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-[0_4px_20px_rgba(37,99,235,0.3)] transition-all duration-200"
         >
           Back To Menu
-        </Button>
+        </motion.button>
       </div>
     </motion.div>
   );

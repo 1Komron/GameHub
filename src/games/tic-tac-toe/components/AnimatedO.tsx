@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { cn } from '../../../shared/lib/utils';
 
 export const AnimatedO: React.FC<{ className?: string; isRemoving?: boolean }> = ({ className, isRemoving }) => (
-  <svg viewBox="0 0 100 100" className={className}>
+  <svg viewBox="0 0 100 100" className={cn(className, "drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]")}>
     <motion.circle
       cx="50"
       cy="50"
-      r="40"
-      stroke="#ef4444"
-      strokeWidth="10"
+      r="35"
+      stroke="#f87171"
+      strokeWidth="12"
       fill="none"
       strokeLinecap="round"
       initial={{ pathLength: isRemoving ? 1 : 0 }}
