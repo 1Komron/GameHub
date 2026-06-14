@@ -56,11 +56,16 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
 
                 // Попытка 3: вручную из URL hash (работает на платформе 'web')
                 if (!initDataRaw) {
-                    const hash = window.location.hash.slice(1); // убираем '#'
-                    const params = new URLSearchParams(hash);
-                    const tgWebAppData = params.get('tgWebAppData');
-                    if (tgWebAppData) {
-                        initDataRaw = tgWebAppData; // оставляем URL-encoded как есть
+                    const hash = window.location.hash.slice(1);
+                    const prefix = 'tgWebAppData=';
+                    const startIdx = hash.indexOf(prefix);
+                    if (startIdx !== -1) {
+                        const afterPrefix = hash.slice(startIdx + prefix.length);
+                        // tgWebAppData идёт до следующего tgWebApp параметра
+                        const endMatch = afterPrefix.match(/&tgWebApp[A-Z]/);
+                        initDataRaw = endMatch
+                            ? afterPrefix.slice(0, endMatch.index)
+                            : afterPrefix;
                     }
                 }
 
