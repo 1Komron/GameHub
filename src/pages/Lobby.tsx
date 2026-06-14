@@ -82,16 +82,16 @@ export const Lobby: React.FC = () => {
             {t('lobby.roomCode')}
           </span>
           <div
-            className="flex items-center gap-3 bg-tg-bg px-6 py-3 rounded-2xl cursor-pointer hover:bg-tg-secondary transition-colors mb-4"
+            className="flex items-center gap-3 bg-tg-bg px-6 py-3 rounded-2xl cursor-pointer hover:bg-tg-secondary transition-colors mb-4 min-w-0"
             onClick={handleCopy}>
             
-            <span className="text-4xl font-mono font-bold tracking-widest text-tg-text">
+            <span className="text-4xl font-mono font-bold tracking-widest text-tg-text truncate">
               {room.code}
             </span>
             {copied ?
-            <Check className="text-green-500" /> :
+            <Check className="text-green-500 flex-shrink-0" /> :
 
-            <Copy className="text-tg-hint" />
+            <Copy className="text-tg-hint flex-shrink-0" />
             }
           </div>
           <span className="text-sm text-tg-hint">
@@ -120,17 +120,17 @@ export const Lobby: React.FC = () => {
             }}>
             
               <GlassCard className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0">
                   <Avatar
                   src={player.photoUrl}
                   fallback={player.name.charAt(0)}
                   size="md" />
                 
-                  <div>
-                    <p className="font-bold text-tg-text">
+                  <div className="min-w-0">
+                    <p className="font-bold text-tg-text truncate">
                       {player.name} {player.id === me?.id && '(You)'}
                     </p>
-                    <p className="text-xs text-tg-hint">
+                    <p className="text-xs text-tg-hint truncate">
                       {player.isHost ? 'Host' : 'Guest'} {player.ready ? '✓ Ready' : ''}
                     </p>
                   </div>

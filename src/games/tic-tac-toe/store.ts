@@ -89,7 +89,8 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
         variant,
         engine,
         gameState: engine.createInitialState(variant),
-        mySlot: null
+        mySlot: null,
+        ghostPiece: null
       });
     },
 
@@ -101,7 +102,8 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
         variant,
         engine,
         gameState: engine.createInitialState(variant),
-        mySlot
+        mySlot,
+        ghostPiece: null
       });
     },
 

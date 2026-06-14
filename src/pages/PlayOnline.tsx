@@ -14,6 +14,13 @@ export const PlayOnline: React.FC = () => {
   const { initOnline, resetGame, engine, gameState, mySlot } = useGameStore();
 
   useEffect(() => {
+    resetGame();
+    return () => {
+      resetGame();
+    };
+  }, [resetGame]);
+
+  useEffect(() => {
     const { room, mySlot: roomSlot } = useRoomStore.getState();
     if (!room) {
       navigate('/');
@@ -23,7 +30,6 @@ export const PlayOnline: React.FC = () => {
     if (gameEngine && roomSlot !== null) {
       initOnline(gameEngine, roomSlot);
     }
-    return () => resetGame();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!engine || !gameState) return null;

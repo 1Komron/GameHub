@@ -109,6 +109,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const lineStyle = getLineStyles();
   const sortedWinningLine = winningLine ? [...winningLine].sort((x, y) => x - y) : null;
   const winnerMark = winningLine ? board[winningLine[0]] : null;
+  
+  // Guard: check if the board is completely fresh/empty
+  const isFreshBoard = board.every(cell => cell === null);
 
   return (
     <LayoutGroup>
@@ -387,7 +390,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
               )}
             </AnimatePresence>
 
-            {/* 3E. DRAW GAME REVEAL SCREEN */}
+            {/* 3E. DRAW GAME REVEAL SCREEN (LARGER SYMBOLS) */}
             <AnimatePresence>
               {mergeStatus === 'completed' && status === 'draw' && (
                 <motion.div
@@ -397,25 +400,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                   transition={{ type: 'spring', stiffness: 120, damping: 15 }}
                   className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-30"
                 >
-                  {/* Both symbols side by side */}
+                  {/* Both symbols side by side - BALANCED STANDARD SIZES */}
                   <div className="flex items-center gap-6 justify-center">
                     <motion.div
                       animate={{ y: [0, -4, 0] }}
                       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                      className="w-14 h-14"
+                      className="w-16 h-16"
                     >
-                      <AnimatedX className="w-14 h-14" />
+                      <AnimatedX className="w-16 h-16" />
                     </motion.div>
                     <motion.div
                       animate={{ y: [0, 4, 0] }}
                       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }}
-                      className="w-12 h-12"
+                      className="w-16 h-16"
                     >
-                      <AnimatedO className="w-12 h-12" />
+                      <AnimatedO className="w-16 h-16" />
                     </motion.div>
                   </div>
 
-                  {/* Clean Draw Typography: Just "DRAW" with glow */}
+                  {/* Clean Draw Typography */}
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -428,8 +431,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
               )}
             </AnimatePresence>
 
-            {/* Ghost Piece Overlay (For Shift Mode) */}
-            {ghostPiece && mergeStatus === 'idle' && (
+            {/* Ghost Piece Overlay - Blocked if the board is fresh */}
+            {ghostPiece && mergeStatus === 'idle' && !isFreshBoard && (
               <div className="absolute inset-0 z-30 pointer-events-none">
                 {(() => {
                   const col = ghostPiece.index % 3;
@@ -437,21 +440,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                   const posX = col === 0 ? '15.6%' : col === 1 ? '50%' : '84.4%';
                   const posY = row === 0 ? '15.6%' : row === 1 ? '50%' : '84.4%';
                   return (
-                    <motion.div
-                      initial={{ 
+                    <div
+                      className="absolute w-[33.33%] h-[33.33%] flex items-center justify-center"
+                      style={{ 
                         left: posX, 
                         top: posY, 
-                        x: '-50%',
-                        y: '-50%',
+                        transform: 'translate(-50%, -50%)',
                       }}
-                      className="absolute w-[33.33%] h-[33.33%] flex items-center justify-center"
                     >
-                      {ghostPiece.slot === 0 ? (
-                        <AnimatedX className="w-12 h-12" isRemoving={true} />
-                      ) : (
-                        <AnimatedO className="w-10 h-10" isRemoving={true} />
-                      )}
-                    </motion.div>
+                      {ghostPiece.slot === 0 ? <AnimatedX className="w-12 h-12" isRemoving={true} /> : <AnimatedO className="w-10 h-10" isRemoving={true} />}
+                    </div>
                   );
                 })()}
               </div>

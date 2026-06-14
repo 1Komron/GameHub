@@ -52,12 +52,12 @@ export const Settings: React.FC = () => {
         <motion.div variants={animationsEnabled ? itemVariants : undefined}>
           <GlassCard className="flex flex-col p-0 overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg flex-shrink-0">
                   <Volume2 size={20} />
                 </div>
-                <div>
-                  <p className="font-medium text-tg-text">
+                <div className="min-w-0">
+                  <p className="font-medium text-tg-text truncate">
                     {t('settings.sound')}
                   </p>
                 </div>
@@ -66,12 +66,12 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg flex-shrink-0">
                   <Sparkles size={20} />
                 </div>
-                <div>
-                  <p className="font-medium text-tg-text">
+                <div className="min-w-0">
+                  <p className="font-medium text-tg-text truncate">
                     {t('settings.animations')}
                   </p>
                 </div>
@@ -80,17 +80,17 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 text-green-500 rounded-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-green-500/10 text-green-500 rounded-lg flex-shrink-0">
                   <Globe size={20} />
                 </div>
-                <div>
-                  <p className="font-medium text-tg-text">
+                <div className="min-w-0">
+                  <p className="font-medium text-tg-text truncate">
                     {t('settings.language')}
                   </p>
                 </div>
               </div>
-              <div className="flex bg-tg-secondary rounded-lg p-1">
+              <div className="flex bg-tg-secondary rounded-lg p-1 flex-shrink-0">
                 <button
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${language === 'en' ? 'bg-tg-bg shadow-sm' : 'text-tg-hint'}`}
                   onClick={() => setLanguage('en')}>
@@ -111,18 +111,18 @@ export const Settings: React.FC = () => {
         <motion.div variants={animationsEnabled ? itemVariants : undefined}>
           <GlassCard className="flex flex-col p-0 overflow-hidden">
             <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-500/10 text-orange-500 rounded-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-orange-500/10 text-orange-500 rounded-lg flex-shrink-0">
                   <Palette size={20} />
                 </div>
-                <div>
-                  <p className="font-medium text-tg-text">
+                <div className="min-w-0">
+                  <p className="font-medium text-tg-text truncate">
                     {t('settings.theme')}
                   </p>
-                  <p className="text-xs text-tg-hint">Synced with Telegram</p>
+                  <p className="text-xs text-tg-hint truncate">Synced with Telegram</p>
                 </div>
               </div>
-              <span className="text-sm font-medium text-tg-primary bg-tg-primary/10 px-3 py-1 rounded-full">
+              <span className="text-sm font-medium text-tg-primary bg-tg-primary/10 px-3 py-1 rounded-full flex-shrink-0">
                 Auto
               </span>
             </div>
@@ -132,16 +132,16 @@ export const Settings: React.FC = () => {
         <motion.div variants={animationsEnabled ? itemVariants : undefined}>
           <GlassCard className="flex flex-col p-0 overflow-hidden">
             <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-500/10 text-gray-500 rounded-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-gray-500/10 text-gray-500 rounded-lg flex-shrink-0">
                   <Info size={20} />
                 </div>
-                <div>
-                  <p className="font-medium text-tg-text">Version</p>
-                  <p className="text-xs text-tg-hint">Game Hub Mini App</p>
+                <div className="min-w-0">
+                  <p className="font-medium text-tg-text truncate">Version</p>
+                  <p className="text-xs text-tg-hint truncate">Game Hub Mini App</p>
                 </div>
               </div>
-              <span className="text-sm text-tg-hint">v2.0.0</span>
+              <span className="text-sm text-tg-hint flex-shrink-0">v2.0.0</span>
             </div>
           </GlassCard>
         </motion.div>
