@@ -56,15 +56,14 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                     }
                 }
 
-                // Попытка 3: из hash — декодируем один раз и берём tgWebAppData
+                // Попытка 3: вручную из hash без URLSearchParams
                 if (!initDataRaw) {
                     const hash = window.location.hash.slice(1);
-                    // hash сам по себе URL-encoded, декодируем его один раз
-                    const decodedHash = decodeURIComponent(hash);
-                    const params = new URLSearchParams(decodedHash);
-                    const tgWebAppData = params.get('tgWebAppData');
-                    if (tgWebAppData) {
-                        initDataRaw = tgWebAppData; // URLSearchParams уже декодирует один раз
+                    // ищем tgWebAppData= и берём всё до следующего tgWebApp параметра
+                    const match = hash.match(/(?:^|&)tgWebAppData=([\s\S]*?)(?:&tgWebApp[A-Z]|$)/);
+                    if (match && match[1]) {
+                        // декодируем один раз — hash сам URL-encoded
+                        initDataRaw = decodeURIComponent(match[1]);
                     }
                 }
 
@@ -72,6 +71,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                 if (!initDataRaw && import.meta.env.DEV) {
                     initDataRaw = import.meta.env.VITE_DEV_INIT_DATA;
                 }
+
+                console.log('[DIAG] initDataRaw first 100 chars:', (initDataRaw as string | undefined)?.substring(0, 100));
 
                 // Попытка 1: из SDK
                 const sdkInitData = (lp as { initData?: { user?: {
