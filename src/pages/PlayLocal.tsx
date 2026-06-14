@@ -42,7 +42,7 @@ export const PlayLocal: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
       <TelegramTopSpacer />
-      <main className="flex-1 flex flex-col items-center p-4 gap-6">
+      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-6">
         <AnimatePresence mode="wait">
           {!isGameOver ? (
               <motion.div
@@ -90,6 +90,7 @@ export const PlayLocal: React.FC = () => {
         </AnimatePresence>
 
         <GameBoard />
+        <div className="flex-1" />
         <GameResultActions
           isVisible={isGameOver}
           status={status}
