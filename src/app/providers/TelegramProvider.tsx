@@ -46,26 +46,25 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                 // Попытка 1: из SDK
                 let initDataRaw = lp.initDataRaw;
 
-                // Попытка 2: из window.Telegram.WebApp
+                // Попытка 2: из window.Telegram.WebApp (самый надёжный для платформы 'web')
                 if (!initDataRaw) {
-                    const tgWebApp = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp;
-                    if (tgWebApp?.initData) {
+                    const tgWebApp = (window as Window & { 
+                        Telegram?: { WebApp?: { initData?: string } } 
+                    }).Telegram?.WebApp;
+                    if (tgWebApp?.initData && tgWebApp.initData.length > 0) {
                         initDataRaw = tgWebApp.initData;
                     }
                 }
 
-                // Попытка 3: вручную из URL hash (работает на платформе 'web')
+                // Попытка 3: из hash — декодируем один раз и берём tgWebAppData
                 if (!initDataRaw) {
                     const hash = window.location.hash.slice(1);
-                    const prefix = 'tgWebAppData=';
-                    const startIdx = hash.indexOf(prefix);
-                    if (startIdx !== -1) {
-                        const afterPrefix = hash.slice(startIdx + prefix.length);
-                        // tgWebAppData идёт до следующего tgWebApp параметра
-                        const endMatch = afterPrefix.match(/&tgWebApp[A-Z]/);
-                        initDataRaw = endMatch
-                            ? afterPrefix.slice(0, endMatch.index)
-                            : afterPrefix;
+                    // hash сам по себе URL-encoded, декодируем его один раз
+                    const decodedHash = decodeURIComponent(hash);
+                    const params = new URLSearchParams(decodedHash);
+                    const tgWebAppData = params.get('tgWebAppData');
+                    if (tgWebAppData) {
+                        initDataRaw = tgWebAppData; // URLSearchParams уже декодирует один раз
                     }
                 }
 
