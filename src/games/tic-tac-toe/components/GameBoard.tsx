@@ -218,7 +218,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                     disabled={!canInteract}
                     className={cn(
                       'relative flex items-center justify-center rounded-2xl bg-slate-950/50 border border-slate-900/60 transition-all duration-300 outline-none overflow-hidden',
-                      canInteract && !cell && 'hover:bg-slate-900/30 hover:border-blue-500/30 active:border-blue-400/40 shadow-inner'
+                      canInteract && !cell && 'md:hover:bg-slate-900/30 md:hover:border-blue-500/30 active:bg-slate-900/20 active:border-blue-400/40 shadow-inner'
                     )}
                   >
                     {/* HUD Corner Accents on Active Empty Cells */}

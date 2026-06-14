@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameBoard } from '../games/tic-tac-toe/components/GameBoard';
 import { GameResultActions } from '../games/tic-tac-toe/components/GameResultActions';
+import { TelegramTopSpacer } from '../shared/ui/TelegramTopSpacer';
 import { useGameStore } from '../games/tic-tac-toe/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { GlassCard } from '../shared/ui/GlassCard';
@@ -43,6 +44,7 @@ export const PlayOnline: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+      <TelegramTopSpacer />
       <main className="flex-1 flex flex-col items-center p-4 gap-3">
         <AnimatePresence mode="wait">
           {!isGameOver ? (

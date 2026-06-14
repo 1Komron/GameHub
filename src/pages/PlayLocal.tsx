@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { soundService } from '../shared/lib/sound';
+import { TelegramTopSpacer } from '../shared/ui/TelegramTopSpacer';
 import { GameBoard } from '../games/tic-tac-toe/components/GameBoard';
 import { GameResultActions } from '../games/tic-tac-toe/components/GameResultActions';
 import { useGameStore } from '../games/tic-tac-toe/store';
@@ -40,6 +41,7 @@ export const PlayLocal: React.FC = () => {
   const currentSlot = engine.getCurrentSlot(gameState);
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+      <TelegramTopSpacer />
       <main className="flex-1 flex flex-col items-center p-4 gap-6">
         <AnimatePresence mode="wait">
           {!isGameOver ? (
