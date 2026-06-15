@@ -91,22 +91,14 @@ export const PlayLocal: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <GameBoard/>
-                <div className="flex-1"/>
+                <GameBoard />
                 <GameResultActions
-                    isVisible={isGameOver}
-                    status={status}
-                    winner={winner}
-                    mode="local"
-                    onPlayAgain={() => {
-                        soundService.play('click');
-                        resetGame();
-                    }}
-                    onBackToMenu={() => {
-                        soundService.play('click');
-                        resetGame();
-                        navigate('/');
-                    }}
+                  isVisible={isGameOver}
+                  status={status}
+                  winner={winner}
+                  mode="local"
+                  onPlayAgain={() => { soundService.play('click'); resetGame(); }}
+                  onBackToMenu={() => { soundService.play('click'); resetGame(); navigate('/'); }}
                 />
             </main>
         </div>

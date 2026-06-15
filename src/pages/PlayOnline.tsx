@@ -100,26 +100,25 @@ export const PlayOnline: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <GameBoard/>
-                <div className="flex-1"/>
+                <GameBoard />
                 <GameResultActions
-                    isVisible={isGameOver}
-                    status={status}
-                    winner={mySlot !== null ? (iWon ? mySlot : (mySlot === 0 ? 1 : 0)) : null}
-                    mode="online"
-                    isWinner={iWon}
-                    onPlayAgain={() => {
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                    }}
-                    onBackToMenu={() => {
-                        resetGame();
-                        if (!isGameOver) {
-                            useRoomStore.getState().leaveRoom();
-                        } else {
-                            useRoomStore.setState({room: null, mySlot: null, matchId: null});
-                        }
-                        navigate('/');
-                    }}
+                  isVisible={isGameOver}
+                  status={status}
+                  winner={mySlot !== null ? (iWon ? mySlot : (mySlot === 0 ? 1 : 0)) : null}
+                  mode="online"
+                  isWinner={iWon}
+                  onPlayAgain={() => {
+                    // eslint-disable-next-line @typescript-eslint/no-empty-function
+                  }}
+                  onBackToMenu={() => {
+                    resetGame();
+                    if (!isGameOver) {
+                      useRoomStore.getState().leaveRoom();
+                    } else {
+                      useRoomStore.setState({ room: null, mySlot: null, matchId: null });
+                    }
+                    navigate('/');
+                  }}
                 />
             </main>
         </div>

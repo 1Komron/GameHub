@@ -34,7 +34,7 @@ export const GameResultActions: React.FC<GameResultActionsProps> = ({
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 150, damping: 20 }}
-      className="flex flex-col items-center gap-6 w-full max-w-sm px-4 mt-4"
+      className="flex flex-col items-center gap-6 w-full max-w-sm px-4"
     >
       <div className="flex flex-col items-center gap-4 w-full pt-2">
         {/* Holographic Glitch Title */}
