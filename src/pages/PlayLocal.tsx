@@ -42,7 +42,7 @@ export const PlayLocal: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen max-w-md mx-auto w-full gap-6">
       <TelegramTopSpacer />
-      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-6 w-full">
+      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-2 w-full">
         <AnimatePresence mode="wait">
           {!isGameOver ? (
               <motion.div
