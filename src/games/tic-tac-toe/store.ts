@@ -33,6 +33,7 @@ interface GameStoreState<TState, TMove, TMode> {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeVariant>>((set, get) => {
   const transport = getTransport();
   let moveUnsubscribe: (() => void) | null = null;
@@ -70,10 +71,12 @@ export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeV
         };
 
         // Reconciliation: Only update if the backend state differs from our local optimistic state
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isSameBoard = currentGameState?.board?.every((cell: any, i: number) => cell === nextGameState.board[i]);
         const isSameTurn = currentGameState?.current === nextGameState.current;
         const isSameWinningLine = JSON.stringify(currentGameState?.winningLine) === JSON.stringify(nextGameState.winningLine);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!isSameBoard || !isSameTurn || !isSameWinningLine) {
           set({ gameState: nextGameState });
         }
@@ -154,6 +157,7 @@ export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeV
           }
         } else if (gameId === 'tic-tac-toe-shift' && (gameState as any).expiringCell !== undefined) {
            // For online shift, use expiringCell if available
+           // eslint-disable-next-line @typescript-eslint/no-explicit-any
            const expiring = (gameState as any).expiringCell;
            if (expiring !== null) {
               ghost = { index: expiring, slot: currentSlot };

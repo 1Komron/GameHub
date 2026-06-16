@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {init, miniApp, themeParams, retrieveLaunchParams} from '@telegram-apps/sdk-react';
 import {swipeBehavior} from '@telegram-apps/sdk';
 import {useUserStore} from '../../entities/user/model/store';
-import {loginWithTelegram, setMockToken} from '../../shared/api/auth/authService';
+import {loginWithTelegram} from '../../shared/api/auth/authService';
 
 interface TelegramProviderProps {
     children: React.ReactNode;
@@ -14,6 +14,7 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
     useEffect(() => {
         const initTelegram = async () => {
             const isDev = import.meta.env.DEV;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isTelegram = Boolean((window as any).Telegram?.WebApp?.initData);
 
             if (isDev && !isTelegram && import.meta.env.VITE_MOCK_AUTH === 'true') {

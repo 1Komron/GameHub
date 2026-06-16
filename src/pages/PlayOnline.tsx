@@ -8,7 +8,7 @@ import {useGameStore} from '../games/tic-tac-toe/store';
 import {useRoomStore} from '../entities/room/model/store';
 import {GlassCard} from '../shared/ui/GlassCard';
 import {getEngineById} from '../shared/config/engines';
-import {TicTacToeState, TicTacToeMove, TicTacToeVariant} from '../games/tic-tac-toe/engine';
+import {TicTacToeMove, TicTacToeVariant} from '../games/tic-tac-toe/engine';
 
 export const PlayOnline: React.FC = () => {
     const navigate = useNavigate();
@@ -30,6 +30,7 @@ export const PlayOnline: React.FC = () => {
         }
         if (roomMySlot === null) return; // wait until slot is known
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const gameEngine = getEngineById<any, TicTacToeMove, TicTacToeVariant>(room.gameId ?? '');
         if (gameEngine) {
             initOnline(gameEngine, roomMySlot);

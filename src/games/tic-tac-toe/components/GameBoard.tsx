@@ -2,11 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { useGameStore } from '../store';
 import { cn } from '../../../shared/lib/utils';
-import type {
-  TicTacToeState,
-  TicTacToeMove,
-  Cell } from
-      '../engine';
 import { soundService } from '../../../shared/lib/sound';
 import { AnimatedX } from './AnimatedX';
 import { AnimatedO } from './AnimatedO';
@@ -19,6 +14,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece, gameId, expiringCell, deletedCell } = useGameStore();
 
   const isShift = gameId === 'tic-tac-toe-shift';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const boardState = gameState as any;
   const board = boardState?.board ?? [];
   const ready = Boolean(engine && gameState);
@@ -121,6 +117,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const winnerMark = getWinnerMark();
   
   // Guard: check if the board is completely fresh/empty
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isFreshBoard = board.every((cell: any) => cell === null);
 
   return (

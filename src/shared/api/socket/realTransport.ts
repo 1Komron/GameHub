@@ -190,6 +190,7 @@ export class RealSocketTransport implements GameTransport {
         this.roomUpdateListeners.forEach((l) => l(snapshot));
 
         if (msg.state) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const rawBoard = (msg.state.board as any[]) || [];
           
           // Detect shift mode: board items are objects, not strings

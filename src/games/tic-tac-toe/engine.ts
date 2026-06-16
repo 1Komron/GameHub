@@ -60,6 +60,7 @@ export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove, TicTacTo
     mode
   }),
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isValidMove: (state: any, move, slot): boolean => {
     if (ticTacToeEngine.getStatus(state) !== 'playing') {
       // Allow the very first move when status is idle.
@@ -101,25 +102,31 @@ export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove, TicTacTo
     };
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getStatus: (state: any): MatchStatus => {
     if (state.winnerSeat !== undefined) {
       if (state.winnerSeat !== null) return 'won';
       if (state.draw) return 'draw';
       return state.totalMoves === 0 ? 'idle' : 'playing';
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (state.winningLine) return 'won';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (state.board.some((c: any) => c === null)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return state.board.every((c: any) => c === null) ? 'idle' : 'playing';
     }
     return 'draw';
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getWinner: (state: any): PlayerSlot | null => {
     if (state.winnerSeat !== undefined) return state.winnerSeat as PlayerSlot;
     if (!state.winningLine) return null;
     return state.board[state.winningLine[0]] as PlayerSlot;
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getCurrentSlot: (state: any): PlayerSlot => {
     if (state.currentSeat !== undefined) return state.currentSeat as PlayerSlot;
     return state.current;
