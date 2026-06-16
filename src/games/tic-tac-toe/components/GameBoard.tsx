@@ -11,7 +11,7 @@ interface GameBoardProps {
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => {
-  const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece, gameId, expiringCell, deletedCell } = useGameStore();
+  const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece, gameId, expiringCell } = useGameStore();
 
   const isShift = gameId === 'tic-tac-toe-shift';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -208,8 +208,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
               transition={{ duration: 0.4 }}
               className="grid grid-cols-3 grid-rows-3 h-full w-full gap-2.5 relative z-10"
             >
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {board.map((cell: any, index: number) => {
-                const isWinningCell = winningLine?.includes(index);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const isWinningCell = ((winningLine as any) || []).includes(index);
                 
                 // Hide winning cells during merge phase so they can be replaced by phantom elements
                 const isHiddenDuringMerge = mergeStatus !== 'idle' && mergeStatus !== 'drawing' && isWinningCell;

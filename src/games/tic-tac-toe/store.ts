@@ -155,6 +155,8 @@ export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeV
               slot: currentSlot
             };
           }
+           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } else if (gameId === 'tic-tac-toe-shift' && (gameState as any).expiringCell !== undefined) {
            // For online shift, use expiringCell if available
            // eslint-disable-next-line @typescript-eslint/no-explicit-any
