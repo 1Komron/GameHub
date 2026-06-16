@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { getTransport, type RoomSnapshot } from '../../../shared/api/socket';
 import type { GameId, PlayerSlot } from '../../game-engine/types';
 import type { LocalIdentity } from '../../../shared/api/socket/transport';
+import { useUserStore } from '../../user/model/store';
 
 interface RoomState {
   matchId: string | null;
@@ -9,6 +10,7 @@ interface RoomState {
   mySlot: PlayerSlot | null;
   error: string | null;
   isConnecting: boolean;
+  isCreator: boolean;
 
   connect: (identity: LocalIdentity) => void;
   createRoom: (gameId: GameId) => Promise<void>;
@@ -22,14 +24,15 @@ interface RoomState {
 export const useRoomStore = create<RoomState>((set) => {
   const transport = getTransport();
 
-  // Setup listeners once
-  transport.onRoomUpdate((room) => {
-    set({ room });
-  });
+  const updateRoomState = (snapshot: RoomSnapshot) => {
+    const currentUserId = String(useUserStore.getState().user?.id);
+    const myPlayer = snapshot.players.find((p) => p.id === currentUserId);
+    set({ room: snapshot, mySlot: myPlayer?.slot ?? null });
+  };
 
-  transport.onMatchStart((room) => {
-    set({ room });
-  });
+  // Setup listeners once
+  transport.onRoomUpdate(updateRoomState);
+  transport.onMatchStart(updateRoomState);
 
   transport.onError((error) => {
     set({ error, isConnecting: false });
@@ -41,6 +44,7 @@ export const useRoomStore = create<RoomState>((set) => {
     mySlot: null,
     error: null,
     isConnecting: false,
+    isCreator: false,
 
     connect: (identity: LocalIdentity) => {
       if (!transport.isConnected()) {
@@ -53,7 +57,9 @@ export const useRoomStore = create<RoomState>((set) => {
       try {
         const room = await transport.createRoom(gameId);
         const matchId = transport.getMatchId();
-        set({ room, mySlot: 0, isConnecting: false, matchId });
+        const currentUserId = String(useUserStore.getState().user?.id);
+        const myPlayer = room.players.find((p) => p.id === currentUserId);
+        set({ room, mySlot: myPlayer?.slot ?? 0, isConnecting: false, matchId, isCreator: true });
       } catch (err: unknown) {
         set({
           error: err instanceof Error ? err.message : 'Failed to create room',
@@ -67,8 +73,9 @@ export const useRoomStore = create<RoomState>((set) => {
       try {
         const room = await transport.joinRoom(code);
         const matchId = transport.getMatchId();
-        const myPlayer = room.players.find((p) => !p.isHost);
-        set({ room, mySlot: myPlayer?.slot ?? 1, isConnecting: false, matchId });
+        const currentUserId = String(useUserStore.getState().user?.id);
+        const myPlayer = room.players.find((p) => p.id === currentUserId);
+        set({ room, mySlot: myPlayer?.slot ?? null, isConnecting: false, matchId, isCreator: false });
       } catch (err: unknown) {
         set({
           error: err instanceof Error ? err.message : 'Failed to join room',
@@ -87,7 +94,7 @@ export const useRoomStore = create<RoomState>((set) => {
 
     leaveRoom: () => {
       transport.leaveRoom();
-      set({ room: null, mySlot: null, matchId: null });
+      set({ room: null, mySlot: null, matchId: null, isCreator: false, error: null });
     },
 
     clearError: () => set({ error: null })

@@ -26,6 +26,10 @@ export const loginWithTelegram = async (initData: string | undefined): Promise<v
 
 export const getToken = (): string | null => jwtToken;
 
+export const setMockToken = (token: string) => {
+  jwtToken = token;
+};
+
 export const authHeaders = () => ({
     'Authorization': `Bearer ${jwtToken}`,
     'Content-Type': 'application/json',

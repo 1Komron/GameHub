@@ -9,6 +9,23 @@ export type Cell = PlayerSlot | null;
 
 export type TicTacToeVariant = 'classic' | 'shift';
 
+export interface ShiftMove {
+  seat: number;
+  cell: number;
+  moveNumber: number;
+}
+
+export interface TicTacToeShiftState {
+  board: (ShiftMove | null)[];
+  currentSeat: number;
+  winnerSeat: number | null;
+  winnerPosition: number[] | null;
+  draw: boolean;
+  expiringCell: number | null;
+  deletedCell: number | null;
+  totalMoves: number;
+}
+
 export interface TicTacToeState {
   board: Cell[];
   current: PlayerSlot;
@@ -43,13 +60,19 @@ export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove, TicTacTo
     mode
   }),
 
-  isValidMove: (state, move, slot): boolean => {
+  isValidMove: (state: any, move, slot): boolean => {
     if (ticTacToeEngine.getStatus(state) !== 'playing') {
       // Allow the very first move when status is idle.
       if (ticTacToeEngine.getStatus(state) !== 'idle') return false;
     }
-    if (state.current !== slot) return false;
-    return state.board[move.index] === null;
+    
+    // Support both classic (state.current) and shift (state.currentSeat)
+    const currentTurn = state.current !== undefined ? state.current : state.currentSeat;
+    if (currentTurn !== slot) return false;
+    
+    // Support both classic (string/number cell) and shift (object cell)
+    const cell = state.board[move.index];
+    return cell === null;
   },
 
   applyMove: (state, move, slot): TicTacToeState => {
@@ -78,18 +101,27 @@ export const ticTacToeEngine: GameEngine<TicTacToeState, TicTacToeMove, TicTacTo
     };
   },
 
-  getStatus: (state): MatchStatus => {
+  getStatus: (state: any): MatchStatus => {
+    if (state.winnerSeat !== undefined) {
+      if (state.winnerSeat !== null) return 'won';
+      if (state.draw) return 'draw';
+      return state.totalMoves === 0 ? 'idle' : 'playing';
+    }
     if (state.winningLine) return 'won';
-    if (state.board.some((c) => c === null)) {
-      return state.board.every((c) => c === null) ? 'idle' : 'playing';
+    if (state.board.some((c: any) => c === null)) {
+      return state.board.every((c: any) => c === null) ? 'idle' : 'playing';
     }
     return 'draw';
   },
 
-  getWinner: (state): PlayerSlot | null => {
+  getWinner: (state: any): PlayerSlot | null => {
+    if (state.winnerSeat !== undefined) return state.winnerSeat as PlayerSlot;
     if (!state.winningLine) return null;
     return state.board[state.winningLine[0]] as PlayerSlot;
   },
 
-  getCurrentSlot: (state): PlayerSlot => state.current
+  getCurrentSlot: (state: any): PlayerSlot => {
+    if (state.currentSeat !== undefined) return state.currentSeat as PlayerSlot;
+    return state.current;
+  }
 };

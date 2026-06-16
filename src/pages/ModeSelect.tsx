@@ -22,6 +22,7 @@ export const ModeSelect: React.FC = () => {
   const { user } = useUserStore();
   const [joinCode, setJoinCode] = useState('');
   const [showJoinInput, setShowJoinInput] = useState(false);
+  const [onlineVariant, setOnlineVariant] = useState<'classic' | 'shift'>('classic');
   const game = getGameById(gameId || '');
   if (!game) {
     return <div className="p-4">Game not found</div>;
@@ -39,10 +40,13 @@ export const ModeSelect: React.FC = () => {
         photoUrl: user.photoUrl
       });
     }
-    await createRoom(gameId as GameId);
+    const effectiveGameId = onlineVariant === 'shift' 
+      ? `${gameId}-shift` 
+      : gameId;
+    await createRoom(effectiveGameId as GameId);
     const { room, matchId } = useRoomStore.getState();
     if (room && matchId) {
-      navigate(`/lobby/${matchId}`);
+      navigate(`/lobby/${matchId}?mode=${onlineVariant}`);
     }
   };
   const handleJoinRoom = async () => {
@@ -147,6 +151,30 @@ export const ModeSelect: React.FC = () => {
             }
 
             <div className="flex flex-col gap-3">
+              {/* Variant selector */}
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={() => setOnlineVariant('classic')}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
+                    onlineVariant === 'classic' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-white/5 text-tg-hint'
+                  }`}
+                >
+                  Classic
+                </button>
+                <button
+                  onClick={() => setOnlineVariant('shift')}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
+                    onlineVariant === 'shift' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-white/5 text-tg-hint'
+                  }`}
+                >
+                  Shift
+                </button>
+              </div>
+
               <Button
                 variant="secondary"
                 size="lg"

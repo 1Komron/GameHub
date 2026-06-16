@@ -28,7 +28,7 @@ export const PlayLocal: React.FC = () => {
     }, [resetGame]);
 
     useEffect(() => {
-        const engine = getEngineById<TicTacToeState, TicTacToeMove, TicTacToeVariant>(gameId ?? '');
+        const engine = getEngineById<any, TicTacToeMove, TicTacToeVariant>(gameId ?? '');
         if (engine) {
             initLocal(engine, mode as never);
         }

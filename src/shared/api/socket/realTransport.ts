@@ -189,24 +189,27 @@ export class RealSocketTransport implements GameTransport {
         
         this.roomUpdateListeners.forEach((l) => l(snapshot));
 
-        // emit move so game board updates
         if (msg.state) {
-          // Normalization: 'X' -> 0, 'O' -> 1
-          const normalizedBoard = (msg.state.board as ('X' | 'O' | null)[] || []).map((c) => {
-            if (c === 'X') return 0;
-            if (c === 'O') return 1;
-            return null;
-          });
+          const rawBoard = (msg.state.board as any[]) || [];
+          
+          // Detect shift mode: board items are objects, not strings
+          const isShift = rawBoard.some(c => c !== null && typeof c === 'object');
+          
+          const normalizedBoard = isShift
+            ? rawBoard // shift: pass as-is, objects with {seat, cell, moveNumber}
+            : rawBoard.map((c) => { // classic: normalize 'X'->0, 'O'->1
+                if (c === 'X') return 0;
+                if (c === 'O') return 1;
+                return null;
+              });
 
-          // currentSeat in msg.state is NEXT player's turn
-          // so previous player (who just moved) is the opposite
           const whoJustMoved = msg.state.currentSeat === 0 ? 1 : 0;
           this.moveListeners.forEach((l) =>
             l({
               slot: whoJustMoved,
               move: {
                 ...msg.state,
-                board: normalizedBoard
+                board: normalizedBoard,
               },
             })
           );

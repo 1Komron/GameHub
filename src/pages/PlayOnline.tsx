@@ -13,6 +13,7 @@ import {TicTacToeState, TicTacToeMove, TicTacToeVariant} from '../games/tic-tac-
 export const PlayOnline: React.FC = () => {
     const navigate = useNavigate();
     const {initOnline, resetGame, engine, gameState, mySlot} = useGameStore();
+    const roomMySlot = useRoomStore((state) => state.mySlot); // reactive
 
     useEffect(() => {
         resetGame();
@@ -22,16 +23,18 @@ export const PlayOnline: React.FC = () => {
     }, [resetGame]);
 
     useEffect(() => {
-        const {room, mySlot: roomSlot} = useRoomStore.getState();
+        const { room } = useRoomStore.getState();
         if (!room) {
             navigate('/');
             return;
         }
-        const gameEngine = getEngineById<TicTacToeState, TicTacToeMove, TicTacToeVariant>(room.gameId ?? '');
-        if (gameEngine && roomSlot !== null) {
-            initOnline(gameEngine, roomSlot);
+        if (roomMySlot === null) return; // wait until slot is known
+
+        const gameEngine = getEngineById<any, TicTacToeMove, TicTacToeVariant>(room.gameId ?? '');
+        if (gameEngine) {
+            initOnline(gameEngine, roomMySlot);
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [roomMySlot, initOnline, navigate]); // re-run when slot becomes available
 
     if (!engine || !gameState) return null;
 

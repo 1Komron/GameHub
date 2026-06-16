@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {init, miniApp, themeParams, retrieveLaunchParams} from '@telegram-apps/sdk-react';
 import {swipeBehavior} from '@telegram-apps/sdk';
 import {useUserStore} from '../../entities/user/model/store';
-import {loginWithTelegram} from '../../shared/api/auth/authService';
+import {loginWithTelegram, setMockToken} from '../../shared/api/auth/authService';
 
 interface TelegramProviderProps {
     children: React.ReactNode;
@@ -13,6 +13,27 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
     const {setUser} = useUserStore();
     useEffect(() => {
         const initTelegram = async () => {
+            const isDev = import.meta.env.DEV;
+            const isTelegram = Boolean((window as any).Telegram?.WebApp?.initData);
+
+            if (isDev && !isTelegram && import.meta.env.VITE_MOCK_AUTH === 'true') {
+                const userNum = new URLSearchParams(window.location.search).get('user') ?? '1';
+
+                setUser({
+                    id: userNum === '1' ? 111111111 : 222222222,
+                    firstName: userNum === '1' ? 'Dev One' : 'Dev Two',
+                    username: userNum === '1' ? 'devuser1' : 'devuser2',
+                    photoUrl: '',
+                    languageCode: 'en',
+                });
+
+                await loginWithTelegram(`dev_mock_${userNum}`); // без try/catch
+
+
+                setIsInitialized(true);
+                return;
+            }
+
             try {
                 // Initialize SDK
                 init();

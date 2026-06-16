@@ -16,14 +16,15 @@ interface GameBoardProps {
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => {
-  const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece } = useGameStore();
+  const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece, gameId, expiringCell, deletedCell } = useGameStore();
 
-  const boardState = gameState as TicTacToeState | null;
+  const isShift = gameId === 'tic-tac-toe-shift';
+  const boardState = gameState as any;
   const board = boardState?.board ?? [];
   const ready = Boolean(engine && gameState);
   const status = (ready && engine && gameState) ? engine.getStatus(gameState) : 'draw';
   const isGameOver = status === 'won' || status === 'draw';
-  const winningLine = boardState?.winningLine ?? null;
+  const winningLine = isShift ? boardState?.winnerPosition : (boardState?.winningLine ?? null);
 
   // Cinematic transition state machine
   const [mergeStatus, setMergeStatus] = useState<'idle' | 'drawing' | 'merging' | 'completed'>('idle');
@@ -61,14 +62,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const currentSlot = engine && gameState ? engine.getCurrentSlot(gameState) : 0;
   const pieceHistory = boardState?.pieceHistory;
 
-  const oldestIndex = (!isGameOver && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
+  const localOldestIndex = (!isGameOver && !isShift && variant === 'shift' && currentSlot !== null && pieceHistory?.[currentSlot]?.length === 3)
       ? (pieceHistory?.[currentSlot]?.[0] ?? null)
       : null;
+
+  const effectiveExpiringCell = isShift ? expiringCell : localOldestIndex;
 
   const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);
 
   const handleCellClick = (index: number) => {
-    if (!canInteract || board[index] !== null) return;
+    const isOccupied = isShift ? board[index] !== null : board[index] !== null;
+    if (!canInteract || isOccupied) return;
     soundService.play('move');
     makeMove({ index } as TicTacToeMove);
   };
@@ -108,10 +112,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
 
   const lineStyle = getLineStyles();
   const sortedWinningLine = winningLine ? [...winningLine].sort((x, y) => x - y) : null;
-  const winnerMark = winningLine ? board[winningLine[0]] : null;
+  
+  const getWinnerMark = () => {
+    if (isShift) return boardState.winnerSeat;
+    if (!winningLine) return null;
+    return board[winningLine[0]];
+  };
+  const winnerMark = getWinnerMark();
   
   // Guard: check if the board is completely fresh/empty
-  const isFreshBoard = board.every(cell => cell === null);
+  const isFreshBoard = board.every((cell: any) => cell === null);
 
   return (
     <LayoutGroup>
@@ -201,7 +211,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
               transition={{ duration: 0.4 }}
               className="grid grid-cols-3 grid-rows-3 h-full w-full gap-2.5 relative z-10"
             >
-              {board.map((cell: Cell, index: number) => {
+              {board.map((cell: any, index: number) => {
                 const isWinningCell = winningLine?.includes(index);
                 
                 // Hide winning cells during merge phase so they can be replaced by phantom elements
@@ -210,19 +220,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                   ? (isWinningCell ? 1 : 0.25) 
                   : 1;
 
+                const cellSeat = isShift ? cell?.seat : cell;
+                const isOccupied = cell !== null;
+
                 return (
                   <motion.button
                     key={index}
-                    whileTap={canInteract && !cell && !isGameOver ? { scale: 0.95 } : {}}
+                    whileTap={canInteract && !isOccupied && !isGameOver ? { scale: 0.95 } : {}}
                     onClick={() => handleCellClick(index)}
                     disabled={!canInteract}
                     className={cn(
                       'relative flex items-center justify-center rounded-2xl bg-slate-950/50 border border-slate-900/60 transition-all duration-300 outline-none overflow-hidden',
-                      canInteract && !cell && 'md:hover:bg-slate-900/30 md:hover:border-blue-500/30 active:bg-slate-900/20 active:border-blue-400/40 shadow-inner'
+                      canInteract && !isOccupied && 'md:hover:bg-slate-900/30 md:hover:border-blue-500/30 active:bg-slate-900/20 active:border-blue-400/40 shadow-inner'
                     )}
                   >
                     {/* HUD Corner Accents on Active Empty Cells */}
-                    {canInteract && !cell && !isGameOver && (
+                    {canInteract && !isOccupied && !isGameOver && (
                       <motion.div
                         animate={{ opacity: [0.4, 0.8, 0.4] }}
                         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -243,18 +256,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
 
                     {/* Render Core Symbol */}
                     <AnimatePresence mode="popLayout">
-                      {cell !== null && !isHiddenDuringMerge && (
+                      {isOccupied && !isHiddenDuringMerge && (
                         <motion.div
-                          key={`cell-${index}-${cell}`}
+                          key={`cell-${index}-${cellSeat}`}
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: symbolOpacity }}
                           exit={{ scale: 0, opacity: 0 }}
                           className={cn(
                             "flex items-center justify-center w-full h-full",
-                            index === oldestIndex && 'animate-blink'
+                            index === effectiveExpiringCell && mergeStatus === 'idle' && !isGameOver && 'animate-blink'
                           )}
                         >
-                          {cell === 0 ? (
+                          {cellSeat === 0 ? (
                             <AnimatedX className="w-12 h-12" />
                           ) : (
                             <AnimatedO className="w-10 h-10" />

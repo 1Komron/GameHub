@@ -9,6 +9,7 @@
 
 export type GameId =
 'tic-tac-toe' |
+'tic-tac-toe-shift' |
 'checkers' |
 'battleship' |
 'basketball' |

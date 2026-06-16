@@ -23,6 +23,8 @@ interface GameStoreState<TState, TMove, TMode> {
   gameState: TState | null;
   mySlot: PlayerSlot | null; // null for local mode
   ghostPiece: GhostPiece | null;
+  expiringCell: number | null;
+  deletedCell: number | null;
 
   initLocal: (engine: GameEngine<TState, TMove, TMode>, variant?: TMode) => void;
   initOnline: (engine: GameEngine<TState, TMove, TMode>, mySlot: PlayerSlot, variant?: TMode) => void;
@@ -31,7 +33,7 @@ interface GameStoreState<TState, TMove, TMode> {
 }
 
 
-export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove, TicTacToeVariant>>((set, get) => {
+export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeVariant>>((set, get) => {
   const transport = getTransport();
   let moveUnsubscribe: (() => void) | null = null;
 
@@ -39,8 +41,18 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
   const setupListener = () => {
     if (moveUnsubscribe) moveUnsubscribe();
     moveUnsubscribe = transport.onMove((payload) => {
-      const { mode: gameMode, gameState: currentGameState } = get();
+      const { mode: gameMode, gameState: currentGameState, gameId } = get();
       if (gameMode === 'online') {
+        if (gameId === 'tic-tac-toe-shift') {
+          const backendState = payload.move as import('./engine').TicTacToeShiftState;
+          set({ 
+            gameState: backendState,
+            expiringCell: backendState.expiringCell,
+            deletedCell: backendState.deletedCell
+          });
+          return;
+        }
+
         const backendState = payload.move as {
           board: import('./engine').Cell[];
           currentSeat: PlayerSlot;
@@ -58,7 +70,7 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
         };
 
         // Reconciliation: Only update if the backend state differs from our local optimistic state
-        const isSameBoard = currentGameState?.board.every((cell, i) => cell === nextGameState.board[i]);
+        const isSameBoard = currentGameState?.board?.every((cell: any, i: number) => cell === nextGameState.board[i]);
         const isSameTurn = currentGameState?.current === nextGameState.current;
         const isSameWinningLine = JSON.stringify(currentGameState?.winningLine) === JSON.stringify(nextGameState.winningLine);
 
@@ -80,6 +92,8 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
     gameState: null,
     mySlot: null,
     ghostPiece: null,
+    expiringCell: null,
+    deletedCell: null,
 
     initLocal: (engine, variant) => {
       set({
@@ -90,7 +104,9 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
         engine,
         gameState: engine.createInitialState(variant),
         mySlot: null,
-        ghostPiece: null
+        ghostPiece: null,
+        expiringCell: null,
+        deletedCell: null
       });
     },
 
@@ -103,12 +119,14 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
         engine,
         gameState: engine.createInitialState(variant),
         mySlot,
-        ghostPiece: null
+        ghostPiece: null,
+        expiringCell: null,
+        deletedCell: null
       });
     },
 
     makeMove: (move) => {
-      const { mode, engine, gameState, mySlot, variant } = get();
+      const { mode, engine, gameState, mySlot, variant, gameId } = get();
       if (!engine || !gameState) return;
 
       const currentSlot = engine.getCurrentSlot(gameState);
@@ -117,15 +135,29 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
       if (mode === 'online' && currentSlot !== mySlot) return; // Not your turn
       if (!engine.isValidMove(gameState, move, currentSlot)) return;
 
+      // For online shift — skip optimistic update, backend is source of truth
+      if (mode === 'online' && gameId === 'tic-tac-toe-shift') {
+        transport.sendMove({ slot: currentSlot, move });
+        return;
+      }
+
       // Handle ghost piece for 'shift' mode
       let ghost: GhostPiece | null = null;
-      if (variant === 'shift' && gameState.pieceHistory[currentSlot]?.length === 3) {
-        const history = gameState.pieceHistory[currentSlot];
-        if (history && history.length > 0) {
-          ghost = { 
-            index: history[0],
-            slot: currentSlot
-          };
+      if (gameId === 'tic-tac-toe-shift' || variant === 'shift') {
+        if (gameState.pieceHistory && gameState.pieceHistory[currentSlot]?.length === 3) {
+          const history = gameState.pieceHistory[currentSlot];
+          if (history && history.length > 0) {
+            ghost = { 
+              index: history[0],
+              slot: currentSlot
+            };
+          }
+        } else if (gameId === 'tic-tac-toe-shift' && (gameState as any).expiringCell !== undefined) {
+           // For online shift, use expiringCell if available
+           const expiring = (gameState as any).expiringCell;
+           if (expiring !== null) {
+              ghost = { index: expiring, slot: currentSlot };
+           }
         }
       }
 
@@ -149,7 +181,9 @@ export const useGameStore = create<GameStoreState<TicTacToeState, TicTacToeMove,
         set({
           matchId: nanoid(),
           gameState: engine.createInitialState(variant),
-          ghostPiece: null
+          ghostPiece: null,
+          expiringCell: null,
+          deletedCell: null
         });
       }
     }

@@ -14,7 +14,7 @@ export const Lobby: React.FC = () => {
     code: string;
   }>();
   const navigate = useNavigate();
-  const { room, mySlot, startMatch, leaveRoom, error } = useRoomStore();
+  const { room, mySlot, startMatch, leaveRoom, error, isCreator } = useRoomStore();
   const { animationsEnabled } = useSettingsStore();
   const [copied, setCopied] = useState(false);
   // Get mode from search params
@@ -45,10 +45,9 @@ export const Lobby: React.FC = () => {
   }, [room?.status, room?.code, navigate, mode]);
   if (!room) return null;
   const me = room.players.find((p) => p.slot === mySlot);
-  const isHost = me?.isHost;
   const isReady = me?.ready || false;
 
-  const canStart = isHost && room.players.length === 2 && room.players.every(p => p.ready === true);
+  const canStart = isCreator && room.players.length === 2 && room.players.every(p => p.ready === true);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(room.code);
@@ -95,9 +94,6 @@ export const Lobby: React.FC = () => {
             }
           </div>
           <span className="text-sm text-tg-hint">
-            Current Mode: <span className="font-bold text-tg-text uppercase">{mode}</span>
-          </span>
-          <span className="text-sm text-tg-hint mt-1">
             Game: <span className="font-bold text-tg-text">{room.gameId?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
           </span>
         </GlassCard>
@@ -170,12 +166,12 @@ export const Lobby: React.FC = () => {
               Ready!
             </Button>
           )}
-          {isReady && !isHost && (
+          {isReady && !isCreator && (
             <Button size="lg" fullWidth disabled>
               Waiting for host...
             </Button>
           )}
-          {isHost && (
+          {isCreator && (
             <Button
               size="lg"
               fullWidth
