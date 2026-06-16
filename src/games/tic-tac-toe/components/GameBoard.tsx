@@ -5,6 +5,7 @@ import { cn } from '../../../shared/lib/utils';
 import { soundService } from '../../../shared/lib/sound';
 import { AnimatedX } from './AnimatedX';
 import { AnimatedO } from './AnimatedO';
+import type { TicTacToeMove } from '../engine';
 
 interface GameBoardProps {
   onAnimationComplete?: () => void;
