@@ -99,7 +99,11 @@ export const PlayLocal: React.FC = () => {
                   winner={winner}
                   mode="local"
                   onPlayAgain={() => { soundService.play('click'); resetGame(); }}
-                  onBackToMenu={() => { soundService.play('click'); resetGame(); navigate('/'); }}
+                  onBackToMenu={() => { 
+                    soundService.play('click'); 
+                    resetGame(); 
+                    navigate(`/game/${gameId}/mode`);
+                  }}
                 />
             </main>
         </div>

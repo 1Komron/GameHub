@@ -43,6 +43,31 @@ export const PlayOnline: React.FC = () => {
     const isMyTurn = currentSlot === mySlot;
     const status = engine.getStatus(gameState);
     const isGameOver = status === 'won' || status === 'draw';
+
+    useEffect(() => {
+        const tg = (window as any).Telegram?.WebApp;
+        if (!tg) return;
+
+        tg.BackButton.show();
+        const handleBack = () => {
+            const { room, leaveRoom } = useRoomStore.getState();
+            const gameId = room?.gameId ?? 'tic-tac-toe';
+            if (!isGameOver) {
+                leaveRoom(); // call leave API
+            } else {
+                useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
+            }
+            resetGame();
+            navigate(`/game/${gameId}/mode`);
+        };
+
+        tg.BackButton.onClick(handleBack);
+        return () => {
+            tg.BackButton.offClick(handleBack);
+            tg.BackButton.hide();
+        };
+    }, [isGameOver, navigate, resetGame]);
+
     const winner = status === 'won' ? engine.getWinner(gameState) : null;
     const iWon = winner === mySlot;
 
@@ -116,12 +141,10 @@ export const PlayOnline: React.FC = () => {
                   }}
                   onBackToMenu={() => {
                     resetGame();
-                    if (!isGameOver) {
-                      useRoomStore.getState().leaveRoom();
-                    } else {
-                      useRoomStore.setState({ room: null, mySlot: null, matchId: null });
-                    }
-                    navigate('/');
+                    const { room } = useRoomStore.getState();
+                    const gameId = room?.gameId ?? 'tic-tac-toe';
+                    useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
+                    navigate(`/game/${gameId}/mode`);
                   }}
                 />
             </main>
