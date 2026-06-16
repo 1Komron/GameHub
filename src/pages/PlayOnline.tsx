@@ -37,14 +37,11 @@ export const PlayOnline: React.FC = () => {
         }
     }, [roomMySlot, initOnline, navigate]); // re-run when slot becomes available
 
-    if (!engine || !gameState) return null;
-
-    const currentSlot = engine.getCurrentSlot(gameState);
-    const isMyTurn = currentSlot === mySlot;
-    const status = engine.getStatus(gameState);
+    const status = engine?.getStatus(gameState ?? null);
     const isGameOver = status === 'won' || status === 'draw';
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tg = (window as any).Telegram?.WebApp;
         if (!tg) return;
 
@@ -68,6 +65,10 @@ export const PlayOnline: React.FC = () => {
         };
     }, [isGameOver, navigate, resetGame]);
 
+    if (!engine || !gameState) return null;
+
+    const currentSlot = engine.getCurrentSlot(gameState);
+    const isMyTurn = currentSlot === mySlot;
     const winner = status === 'won' ? engine.getWinner(gameState) : null;
     const iWon = winner === mySlot;
 
