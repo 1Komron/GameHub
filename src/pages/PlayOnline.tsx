@@ -9,6 +9,7 @@ import {useRoomStore} from '../entities/room/model/store';
 import {GlassCard} from '../shared/ui/GlassCard';
 import {getEngineById} from '../shared/config/engines';
 import {TicTacToeMove, TicTacToeVariant} from '../games/tic-tac-toe/engine';
+import type { MatchStatus } from '../entities/game-engine/types';
 
 export const PlayOnline: React.FC = () => {
     const navigate = useNavigate();
@@ -37,7 +38,7 @@ export const PlayOnline: React.FC = () => {
         }
     }, [roomMySlot, initOnline, navigate]); // re-run when slot becomes available
 
-    const status = engine?.getStatus(gameState ?? null);
+    const status = engine && gameState ? engine.getStatus(gameState) : 'playing' as MatchStatus;
     const isGameOver = status === 'won' || status === 'draw';
 
     useEffect(() => {

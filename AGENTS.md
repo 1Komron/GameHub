@@ -68,3 +68,17 @@ Build must pass with 0 errors before task is considered done.
 
 Then confirm architecture compliance:
 > "This change follows FSD, does not break any established patterns listed in AGENTS.md, and build passes."
+
+## Hook Rules (React)
+
+- NEVER place `useEffect`, `useState`, `useRef`, or any React hook AFTER an early return statement (`if (!x) return null`).
+- ALL hooks must be declared at the TOP of the component, before any conditional returns.
+- If a hook needs data that may be null (e.g. `engine`, `gameState`), handle the null case INSIDE the hook with an early return, not outside.
+- When moving hooks to fix this, make sure any variables they depend on (like `isGameOver`, `status`) are also computed before the early return using optional chaining: `engine?.getStatus(gameState ?? null)`.
+
+## TypeScript — Avoid `undefined` leaking into typed variables
+
+- When using optional chaining (`?.`), the result can be `undefined`. Always provide a fallback:
+  - BAD: `const status = engine?.getStatus(state);` → type is `MatchStatus | undefined`
+  - GOOD: `const status = engine && state ? engine.getStatus(state) : 'playing' as MatchStatus;`
+- Never assign `X | undefined` to a variable typed as `X` without a fallback or type assertion.
