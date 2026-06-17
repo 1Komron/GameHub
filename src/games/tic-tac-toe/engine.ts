@@ -26,6 +26,50 @@ export interface TicTacToeShiftState {
   totalMoves: number;
 }
 
+export function applyShiftMove(state: TicTacToeShiftState, move: TicTacToeMove, slot: number): TicTacToeShiftState {
+  const board = [...state.board];
+  const totalMoves = state.totalMoves + 1;
+  
+  // Place new move
+  board[move.index] = { seat: slot, cell: move.index, moveNumber: totalMoves };
+  
+  let deletedCell: number | null = null;
+  // Evict oldest move of current player if they have 4+ moves (i.e. totalMoves > 6 globally for this seat)
+  if (totalMoves > 6) {
+    const ownMoves = board
+      .filter((m): m is ShiftMove => m !== null && m.seat === slot)
+      .sort((a, b) => a.moveNumber - b.moveNumber);
+    
+    if (ownMoves.length > 3) {
+      const oldest = ownMoves[0];
+      deletedCell = oldest.cell;
+      board[oldest.cell] = null;
+    }
+  }
+  
+  const nextSeat = slot === 0 ? 1 : 0;
+  
+  // Compute expiring cell for the NEXT seat (the one about to move)
+  let expiringCell: number | null = null;
+  if (totalMoves >= 6) {
+    const nextSeatMoves = board
+      .filter((m): m is ShiftMove => m !== null && m.seat === nextSeat)
+      .sort((a, b) => a.moveNumber - b.moveNumber);
+    if (nextSeatMoves.length === 3) {
+      expiringCell = nextSeatMoves[0].cell;
+    }
+  }
+  
+  return {
+    ...state,
+    board,
+    currentSeat: nextSeat,
+    deletedCell,
+    expiringCell,
+    totalMoves,
+  };
+}
+
 export interface TicTacToeState {
   board: Cell[];
   current: PlayerSlot;

@@ -7,7 +7,8 @@ import type {
   PlayerSlot } from
 '../../entities/game-engine/types';
 import { getTransport } from '../../shared/api/socket';
-import type { TicTacToeState, TicTacToeMove, TicTacToeVariant } from './engine';
+import type { TicTacToeState, TicTacToeMove, TicTacToeVariant, TicTacToeShiftState } from './engine';
+import { applyShiftMove } from './engine';
 
 interface GhostPiece {
   index: number;
@@ -138,8 +139,10 @@ export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeV
       if (mode === 'online' && currentSlot !== mySlot) return; // Not your turn
       if (!engine.isValidMove(gameState, move, currentSlot)) return;
 
-      // For online shift — skip optimistic update, backend is source of truth
+      // For online shift — apply optimistic prediction, backend remains source of truth
       if (mode === 'online' && gameId === 'tic-tac-toe-shift') {
+        const predictedState = applyShiftMove(gameState as TicTacToeShiftState, move, currentSlot);
+        set({ gameState: predictedState });
         transport.sendMove({ slot: currentSlot, move });
         return;
       }
