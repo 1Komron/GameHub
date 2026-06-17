@@ -15,7 +15,9 @@ html {
 
 #root {
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
 }
 
 @keyframes blink {

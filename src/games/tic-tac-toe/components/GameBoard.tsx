@@ -259,9 +259,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                       {isOccupied && !isHiddenDuringMerge && (
                         <motion.div
                           key={`cell-${index}-${cellSeat}`}
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: symbolOpacity }}
-                          exit={{ scale: 0, opacity: 0 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: symbolOpacity }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.1 }}
                           className={cn(
                             "flex items-center justify-center w-full h-full",
                             index === effectiveExpiringCell && mergeStatus === 'idle' && !isGameOver && 'animate-blink'
