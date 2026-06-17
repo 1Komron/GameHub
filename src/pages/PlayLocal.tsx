@@ -42,7 +42,7 @@ export const PlayLocal: React.FC = () => {
     const winner = status === 'won' ? engine.getWinner(gameState) : null;
     const currentSlot = engine.getCurrentSlot(gameState);
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen max-w-md mx-auto w-full">
+        <div className="flex flex-col items-center justify-start h-screen max-w-md mx-auto w-full overflow-hidden" style={{ overscrollBehavior: 'none' }}>
             <TelegramTopSpacer/>
             <main className="flex-1 flex flex-col items-center justify-start p-4 gap-2 w-full">
                 <AnimatePresence mode="wait">
