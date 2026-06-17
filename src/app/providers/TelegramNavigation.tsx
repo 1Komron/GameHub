@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { backButton, viewport } from '@telegram-apps/sdk-react';
+import { disableVerticalSwipes, isSwipeBehaviorSupported, mountSwipeBehavior, isSwipeBehaviorMounted } from '@telegram-apps/sdk';
 import { useRoomStore } from '../../entities/room/model/store';
 import { useGameStore } from '../../games/tic-tac-toe/store';
 /**
@@ -22,6 +23,18 @@ export const TelegramNavigation: React.FC = () => {
           console.log('[DIAG] viewport isMounted after mount:', viewport.isMounted());
 
           viewport.expand();
+          
+          try {
+            if (isSwipeBehaviorSupported()) {
+              if (!isSwipeBehaviorMounted()) {
+                await mountSwipeBehavior();
+              }
+              disableVerticalSwipes();
+            }
+          } catch {
+            /* no-op outside Telegram or unsupported */
+          }
+
           viewport.bindCssVars();
 
           if (viewport.requestFullscreen.isAvailable()) {
