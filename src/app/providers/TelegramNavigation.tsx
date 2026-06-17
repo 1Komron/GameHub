@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { backButton, viewport } from '@telegram-apps/sdk-react';
+import { useRoomStore } from '../../entities/room/model/store';
+import { useGameStore } from '../../games/tic-tac-toe/store';
 /**
  * Controls Telegram's native Back Button based on the current
  * route. All SDK access is guarded so this is a safe no-op when running
@@ -41,7 +43,7 @@ export const TelegramNavigation: React.FC = () => {
       /* Not inside Telegram — ignore. */
     }
   }, []);
-  // Back Button: visible on every screen except Home, navigates back.
+  // Back Button: visible on every screen except Home, navigates back based on path.
   useEffect(() => {
     try {
       if (!backButton.isMounted()) return;
@@ -50,12 +52,54 @@ export const TelegramNavigation: React.FC = () => {
         return;
       }
       backButton.show();
-      const off = backButton.onClick(() => navigate(-1));
+      const off = backButton.onClick(() => {
+        const path = location.pathname;
+        
+        if (path === '/') {
+          return; // already hidden on home, no-op
+        }
+        
+        if (path.startsWith('/play/online/')) {
+          // During active online game — leave match, go to lobby
+          const { room, leaveRoom } = useRoomStore.getState();
+          const { resetGame, gameState, engine } = useGameStore.getState();
+          const isGameOver = engine && gameState 
+            ? (engine.getStatus(gameState) === 'won' || engine.getStatus(gameState) === 'draw')
+            : false;
+          
+          if (room) {
+            if (!isGameOver) {
+              leaveRoom();
+            }
+            resetGame();
+            navigate(`/lobby/${room.code}`);
+          } else {
+            navigate('/');
+          }
+          return;
+        }
+        
+        if (path.startsWith('/lobby/')) {
+          // From lobby — always go home, leave room
+          useRoomStore.getState().leaveRoom();
+          navigate('/');
+          return;
+        }
+        
+        if (path.startsWith('/game/') && path.endsWith('/mode')) {
+          // ModeSelect — go home
+          navigate('/');
+          return;
+        }
+        
+        // default fallback
+        navigate(-1);
+      });
       return () => off();
     } catch {
       /* no-op outside Telegram */
     }
-  }, [isHome, navigate]);
+  }, [location.pathname, navigate]);
 
   // Swipe Back logic
   useEffect(() => {

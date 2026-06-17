@@ -8,6 +8,16 @@
 
 /* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
 
+html {
+  overscroll-behavior: none;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
@@ -46,6 +56,8 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  overscroll-behavior: none;
+  height: 100%;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;

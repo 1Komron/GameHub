@@ -42,31 +42,6 @@ export const PlayOnline: React.FC = () => {
     const status = engine && gameState ? engine.getStatus(gameState) : 'playing' as MatchStatus;
     const isGameOver = status === 'won' || status === 'draw';
 
-    useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const tg = (window as any).Telegram?.WebApp;
-        if (!tg) return;
-
-        tg.BackButton.show();
-        const handleBack = () => {
-            const { room, leaveRoom } = useRoomStore.getState();
-            const baseGameId = (room?.gameId ?? 'tic-tac-toe').replace('-shift', '');
-            if (!isGameOver) {
-                leaveRoom(); // call leave API
-            } else {
-                useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
-            }
-            resetGame();
-            navigate(`/game/${baseGameId}/mode`);
-        };
-
-        tg.BackButton.onClick(handleBack);
-        return () => {
-            tg.BackButton.offClick(handleBack);
-            tg.BackButton.hide();
-        };
-    }, [isGameOver, navigate, resetGame]);
-
     if (!engine || !gameState) return null;
 
     const currentSlot = engine.getCurrentSlot(gameState);
