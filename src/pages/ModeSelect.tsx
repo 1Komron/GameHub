@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Users, Globe, Plus, LogIn, Play } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
+import { TelegramBottomSpacer } from '../shared/ui/TelegramBottomSpacer';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { useRoomStore } from '../entities/room/model/store';
 import { useUserStore } from '../entities/user/model/store';
@@ -218,6 +219,7 @@ export const ModeSelect: React.FC = () => {
             </div>
           </GlassCard>
         </motion.div>
+        <TelegramBottomSpacer />
       </main>
     </div>);
 

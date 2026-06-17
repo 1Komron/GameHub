@@ -4,6 +4,7 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {GameBoard} from '../games/tic-tac-toe/components/GameBoard';
 import {GameResultActions} from '../games/tic-tac-toe/components/GameResultActions';
 import {TelegramTopSpacer} from '../shared/ui/TelegramTopSpacer';
+import {TelegramBottomSpacer} from '../shared/ui/TelegramBottomSpacer';
 import {useGameStore} from '../games/tic-tac-toe/store';
 import {useRoomStore} from '../entities/room/model/store';
 import {GlassCard} from '../shared/ui/GlassCard';
@@ -49,14 +50,14 @@ export const PlayOnline: React.FC = () => {
         tg.BackButton.show();
         const handleBack = () => {
             const { room, leaveRoom } = useRoomStore.getState();
-            const gameId = room?.gameId ?? 'tic-tac-toe';
+            const baseGameId = (room?.gameId ?? 'tic-tac-toe').replace('-shift', '');
             if (!isGameOver) {
                 leaveRoom(); // call leave API
             } else {
                 useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
             }
             resetGame();
-            navigate(`/game/${gameId}/mode`);
+            navigate(`/game/${baseGameId}/mode`);
         };
 
         tg.BackButton.onClick(handleBack);
@@ -144,11 +145,12 @@ export const PlayOnline: React.FC = () => {
                   onBackToMenu={() => {
                     resetGame();
                     const { room } = useRoomStore.getState();
-                    const gameId = room?.gameId ?? 'tic-tac-toe';
+                    const baseGameId = (room?.gameId ?? 'tic-tac-toe').replace('-shift', '');
                     useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
-                    navigate(`/game/${gameId}/mode`);
+                    navigate(`/game/${baseGameId}/mode`);
                   }}
                 />
+                <TelegramBottomSpacer />
             </main>
         </div>
     );

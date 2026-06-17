@@ -5,6 +5,7 @@ import { Copy, Check, Play } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { Avatar } from '../shared/ui/Avatar';
+import { TelegramBottomSpacer } from '../shared/ui/TelegramBottomSpacer';
 import { useRoomStore } from '../entities/room/model/store';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { t } from '../shared/i18n';
@@ -189,6 +190,7 @@ export const Lobby: React.FC = () => {
             {t('lobby.leaveRoom')}
           </Button>
         </div>
+        <TelegramBottomSpacer />
       </main>
     </div>);
 

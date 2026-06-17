@@ -19,7 +19,7 @@ export const AnimatedX: React.FC<{ className?: string; isRemoving?: boolean }> =
       strokeWidth="12"
       strokeLinecap="round"
       initial={{ pathLength: isRemoving ? 1 : 0 }}
-      animate={{ pathLength: isRemoving ? 0 : 1, transition: { delay: 0.125, duration: 0.125, ease: "linear" } }}
+      animate={{ pathLength: isRemoving ? 0 : 1, transition: { duration: 0.125, ease: "linear" } }}
     />
   </svg>
 );

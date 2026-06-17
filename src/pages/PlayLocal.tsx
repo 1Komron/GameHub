@@ -3,6 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {motion, AnimatePresence} from 'framer-motion';
 import {soundService} from '../shared/lib/sound';
 import {TelegramTopSpacer} from '../shared/ui/TelegramTopSpacer';
+import {TelegramBottomSpacer} from '../shared/ui/TelegramBottomSpacer';
 import {GameBoard} from '../games/tic-tac-toe/components/GameBoard';
 import {GameResultActions} from '../games/tic-tac-toe/components/GameResultActions';
 import {useGameStore} from '../games/tic-tac-toe/store';
@@ -105,6 +106,7 @@ export const PlayLocal: React.FC = () => {
                     navigate(`/game/${gameId}/mode`);
                   }}
                 />
+                <TelegramBottomSpacer />
             </main>
         </div>
     );
