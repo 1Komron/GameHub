@@ -198,19 +198,19 @@ export const ModeSelect: React.FC = () => {
                   {t('mode.joinRoom')}
                 </Button> :
 
-              <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-2 w-full mt-3">
                   <input
                   type="text"
                   placeholder={t('mode.enterCode')}
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                  className="flex-1 min-w-0 w-full px-4 py-3 bg-slate-950/40 border border-white/10 rounded-2xl text-sm uppercase text-center font-mono tracking-widest focus:outline-none focus:border-tg-primary"
+                  className="flex-1 min-w-0 w-full px-4 py-3 bg-slate-950/40 border border-white/10 rounded-2xl text-sm uppercase text-center font-mono tracking-widest focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-slate-500"
                   maxLength={7} />
                 
                   <button
                   onClick={handleJoinRoom}
                   disabled={!joinCode || isConnecting}
-                  className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-[0_4px_12px_rgba(37,99,235,0.2)] text-sm transition-all duration-200">
+                  className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-semibold rounded-2xl shadow-[0_4px_12px_rgba(37,99,235,0.2)] transition-all duration-200">
                   
                     {t('mode.joinRoom')}
                   </button>

@@ -15,11 +15,29 @@ import { authHeaders } from '../auth/authService';
 export class RealSocketTransport implements GameTransport {
   private ws: WebSocket | null = null;
   private matchId: string | null = null;
+  private heartbeatInterval: any = null;
+  private reconnectTimeout: any = null;
 
-  private roomUpdateListeners: ((room: RoomSnapshot) => void)[] = [];
-  private matchStartListeners: ((room: RoomSnapshot) => void)[] = [];
-  private moveListeners: ((payload: MovePayload) => void)[] = [];
-  private errorListeners: ((message: string) => void)[] = [];
+  private startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send('ping');
+      }
+    }, 5000);
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+  }
+
+  private attemptReconnect(matchId: string) {
+    if (!this.matchId) return; // User disconnected, don't reconnect
+    console.log('[Socket] Attempting to reconnect in 2 seconds...');
+    this.reconnectTimeout = setTimeout(() => {
+      this.openWebSocket(matchId);
+    }, 2000);
+  }
 
   connect(): void {
     // Auth is handled separately via loginWithTelegram in TelegramProvider
@@ -75,16 +93,23 @@ export class RealSocketTransport implements GameTransport {
   }
 
   leaveRoom(): void {
-    if (this.matchId) {
-      fetch(`${API_URL}/api/matches/${this.matchId}/leave`, {
+    this.matchId = null;
+    this.stopHeartbeat();
+    if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+    
+    // We should still try to notify the server
+    fetch(`${API_URL}/api/matches/${this.matchId}/leave`, {
         method: 'DELETE',
         headers: authHeaders(),
-      });
+    }).catch(() => {});
+
+    if (this.ws) {
+        this.ws.onclose = null;
+        this.ws.close();
+        this.ws = null;
     }
-    this.ws?.close();
-    this.ws = null;
-    this.matchId = null;
   }
+
 
   setReady(): void {
     if (!this.matchId) return;
@@ -145,83 +170,101 @@ export class RealSocketTransport implements GameTransport {
       console.log('[Socket] Closing existing WebSocket before opening new one');
       this.ws.onmessage = null;
       this.ws.onerror = null;
+      this.ws.onclose = null;
       this.ws.close();
       this.ws = null;
     }
 
-    this.ws = new WebSocket(`${WS_URL}/ws/matches/${matchId}`);
+    // Delay for iOS WebView stability
+    setTimeout(() => {
+        this.ws = new WebSocket(`${WS_URL}/ws/matches/${matchId}`);
 
-    this.ws.onmessage = async (event) => {
-      const msg = JSON.parse(event.data);
+        this.ws.onopen = () => {
+            console.log('[Socket] Connected');
+            this.startHeartbeat();
+        };
 
-      if (msg.type === 'PLAYER_JOINED' || msg.type === 'PLAYER_READY') {
-        const match = await this.fetchMatch(matchId);
-        const snapshot = matchViewToSnapshot(match);
-        this.roomUpdateListeners.forEach((l) => l(snapshot));
-        if (match.status === 'ACTIVE') {
-          this.matchStartListeners.forEach((cb) => cb(snapshot));
-        }
-      } else if (msg.type === 'MATCH_STARTED') {
-        const match = await this.fetchMatch(matchId);
-        const snapshot = matchViewToSnapshot(match);
-        this.roomUpdateListeners.forEach(l => l(snapshot));
-        this.matchStartListeners.forEach(cb => cb(snapshot));
-      } else if (msg.type === 'PLAYER_LEFT') {
-        const match = await this.fetchMatch(matchId);
-        const snapshot = matchViewToSnapshot(match);
-        this.roomUpdateListeners.forEach(l => l(snapshot));
-      } else if (msg.type === 'MATCH_CANCELLED') {
-        // Host left — notify remaining player
-        this.errorListeners.forEach(cb => cb('Host left the room'));
-        this.roomUpdateListeners.forEach(l => l({
-          code: '',
-          gameId: 'tic-tac-toe',
-          status: 'finished',
-          players: [],
-        }));
-      } else if (msg.type === 'MATCH_UPDATED' || msg.type === 'MATCH_FINISHED') {
-        const match = await this.fetchMatch(matchId);
-        const snapshot = matchViewToSnapshot(match);
+        this.ws.onclose = () => {
+            console.log('[Socket] Disconnected');
+            this.stopHeartbeat();
+            this.attemptReconnect(matchId);
+        };
+
+        this.ws.onmessage = async (event) => {
+            if (event.data === 'pong') return;
+            const msg = JSON.parse(event.data);
+            
+            // ... (message handling logic as before)
+            if (msg.type === 'PLAYER_JOINED' || msg.type === 'PLAYER_READY') {
+                const match = await this.fetchMatch(matchId);
+                const snapshot = matchViewToSnapshot(match);
+                this.roomUpdateListeners.forEach((l) => l(snapshot));
+                if (match.status === 'ACTIVE') {
+                  this.matchStartListeners.forEach((cb) => cb(snapshot));
+                }
+              } else if (msg.type === 'MATCH_STARTED') {
+                const match = await this.fetchMatch(matchId);
+                const snapshot = matchViewToSnapshot(match);
+                this.roomUpdateListeners.forEach(l => l(snapshot));
+                this.matchStartListeners.forEach(cb => cb(snapshot));
+              } else if (msg.type === 'PLAYER_LEFT') {
+                const match = await this.fetchMatch(matchId);
+                const snapshot = matchViewToSnapshot(match);
+                this.roomUpdateListeners.forEach(l => l(snapshot));
+              } else if (msg.type === 'MATCH_CANCELLED') {
+                // Host left — notify remaining player
+                this.errorListeners.forEach(cb => cb('Host left the room'));
+                this.roomUpdateListeners.forEach(l => l({
+                  code: '',
+                  gameId: 'tic-tac-toe',
+                  status: 'finished',
+                  players: [],
+                }));
+              } else if (msg.type === 'MATCH_UPDATED' || msg.type === 'MATCH_FINISHED') {
+                const match = await this.fetchMatch(matchId);
+                const snapshot = matchViewToSnapshot(match);
+                
+                if (msg.type === 'MATCH_FINISHED') {
+                  snapshot.status = 'finished';
+                }
+                
+                this.roomUpdateListeners.forEach((l) => l(snapshot));
         
-        if (msg.type === 'MATCH_FINISHED') {
-          snapshot.status = 'finished';
-        }
+                if (msg.state) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const rawBoard = (msg.state.board as any[]) || [];
+                  
+                  // Detect shift mode: board items are objects, not strings
+                  const isShift = rawBoard.some(c => c !== null && typeof c === 'object');
+                  
+                  const normalizedBoard = isShift
+                    ? rawBoard // shift: pass as-is, objects with {seat, cell, moveNumber}
+                    : rawBoard.map((c) => { // classic: normalize 'X'->0, 'O'->1
+                        if (c === 'X') return 0;
+                        if (c === 'O') return 1;
+                        return null;
+                      });
         
-        this.roomUpdateListeners.forEach((l) => l(snapshot));
+                  const whoJustMoved = msg.state.currentSeat === 0 ? 1 : 0;
+                  this.moveListeners.forEach((l) =>
+                    l({
+                      slot: whoJustMoved,
+                      move: {
+                        ...msg.state,
+                        board: normalizedBoard,
+                      },
+                    })
+                  );
+                }
+              }
+        };
 
-        if (msg.state) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const rawBoard = (msg.state.board as any[]) || [];
-          
-          // Detect shift mode: board items are objects, not strings
-          const isShift = rawBoard.some(c => c !== null && typeof c === 'object');
-          
-          const normalizedBoard = isShift
-            ? rawBoard // shift: pass as-is, objects with {seat, cell, moveNumber}
-            : rawBoard.map((c) => { // classic: normalize 'X'->0, 'O'->1
-                if (c === 'X') return 0;
-                if (c === 'O') return 1;
-                return null;
-              });
-
-          const whoJustMoved = msg.state.currentSeat === 0 ? 1 : 0;
-          this.moveListeners.forEach((l) =>
-            l({
-              slot: whoJustMoved,
-              move: {
-                ...msg.state,
-                board: normalizedBoard,
-              },
-            })
-          );
-        }
-      }
-    };
-
-    this.ws.onerror = () => {
-      this.errorListeners.forEach((l) => l('WebSocket error'));
-    };
+        this.ws.onerror = () => {
+            this.errorListeners.forEach((l) => l('WebSocket error'));
+        };
+    }, 500);
   }
+
 
   private async fetchMatch(matchId: string) {
     const response = await fetch(`${API_URL}/api/matches/${matchId}`, {
