@@ -15,8 +15,13 @@ import { authHeaders } from '../auth/authService';
 export class RealSocketTransport implements GameTransport {
   private ws: WebSocket | null = null;
   private matchId: string | null = null;
-  private heartbeatInterval: any = null;
-  private reconnectTimeout: any = null;
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  private roomUpdateListeners: ((room: RoomSnapshot) => void)[] = [];
+  private matchStartListeners: ((room: RoomSnapshot) => void)[] = [];
+  private moveListeners: ((payload: MovePayload) => void)[] = [];
+  private errorListeners: ((message: string) => void)[] = [];
 
   private startHeartbeat() {
     this.stopHeartbeat();
@@ -101,7 +106,9 @@ export class RealSocketTransport implements GameTransport {
     fetch(`${API_URL}/api/matches/${this.matchId}/leave`, {
         method: 'DELETE',
         headers: authHeaders(),
-    }).catch(() => {});
+    }).catch(() => {
+        // Silent catch: Ignore network exceptions if fetch is aborted during unmount/leaving
+    });
 
     if (this.ws) {
         this.ws.onclose = null;
