@@ -89,48 +89,6 @@ export const ModeSelect: React.FC = () => {
           
           <GlassCard className="flex flex-col gap-4 p-6">
             <div className="flex items-center gap-4 mb-2">
-              <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
-                <Users size={28} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-tg-text">
-                  {t('mode.local')}
-                </h3>
-                <p className="text-sm text-tg-hint">{t('mode.localDesc')}</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button size="lg" fullWidth onClick={() => handleLocalPlay('classic')}>
-                <Play className="mr-2" size={20} />
-                {t('mode.localClassic')}
-              </Button>
-              <Button size="lg" fullWidth onClick={() => handleLocalPlay('shift')} className="bg-purple-600">
-                <Play className="mr-2" size={20} />
-                {t('mode.localShift')}
-              </Button>
-            </div>
-          </GlassCard>
-        </motion.div>
-
-        <motion.div
-          initial={
-          animationsEnabled ?
-          {
-            opacity: 0,
-            y: 20
-          } :
-          false
-          }
-          animate={{
-            opacity: 1,
-            y: 0
-          }}
-          transition={{
-            delay: 0.1
-          }}>
-          
-          <GlassCard className="flex flex-col gap-4 p-6">
-            <div className="flex items-center gap-4 mb-2">
               <div className="p-3 bg-green-500/10 text-green-500 rounded-xl">
                 <Globe size={28} />
               </div>
@@ -216,6 +174,48 @@ export const ModeSelect: React.FC = () => {
                   </button>
                 </div>
               }
+            </div>
+          </GlassCard>
+        </motion.div>
+
+        <motion.div
+          initial={
+          animationsEnabled ?
+          {
+            opacity: 0,
+            y: 20
+          } :
+          false
+          }
+          animate={{
+            opacity: 1,
+            y: 0
+          }}
+          transition={{
+            delay: 0.1
+          }}>
+          
+          <GlassCard className="flex flex-col gap-4 p-6">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
+                <Users size={28} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-tg-text">
+                  {t('mode.local')}
+                </h3>
+                <p className="text-sm text-tg-hint">{t('mode.localDesc')}</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button size="lg" fullWidth onClick={() => handleLocalPlay('classic')}>
+                <Play className="mr-2" size={20} />
+                {t('mode.localClassic')}
+              </Button>
+              <Button size="lg" fullWidth onClick={() => handleLocalPlay('shift')} className="bg-purple-600">
+                <Play className="mr-2" size={20} />
+                {t('mode.localShift')}
+              </Button>
             </div>
           </GlassCard>
         </motion.div>
