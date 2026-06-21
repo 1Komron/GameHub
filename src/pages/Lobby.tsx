@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Copy, Check, Play, Users } from 'lucide-react';
@@ -7,7 +7,6 @@ import { GlassCard } from '../shared/ui/GlassCard';
 import { Avatar } from '../shared/ui/Avatar';
 import { TelegramBottomSpacer } from '../shared/ui/TelegramBottomSpacer';
 import { OpponentsModal } from '../widgets/recent-opponents/OpponentsModal';
-import { HeaderActionsContext } from '../shared/context/HeaderActionsContext';
 import { useRoomStore } from '../entities/room/model/store';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { t } from '../shared/i18n';
@@ -20,16 +19,6 @@ export const Lobby: React.FC = () => {
   const { animationsEnabled } = useSettingsStore();
   const [copied, setCopied] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { setExtraActions } = useContext(HeaderActionsContext);
-  
-  useEffect(() => {
-    setExtraActions(
-      <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(true)}>
-        <Users size={22} />
-      </Button>
-    );
-    return () => setExtraActions(null);
-  }, [setExtraActions]);
   
   // Get mode from search params
   const searchParams = new URLSearchParams(window.location.search);
@@ -87,8 +76,16 @@ export const Lobby: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30 h-screen overflow-hidden" style={{ overscrollBehavior: 'none' }}>
+      <header className="flex justify-between items-center p-4">
+        <div />
+        <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(true)}>
+          <Users size={22} />
+        </Button>
+      </header>
       <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6">
         <OpponentsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} currentMatchId={matchId ?? ''} />
+
+
         {error && (
           <div className="p-3 bg-red-500/10 text-red-500 rounded-lg text-sm text-center">
             {error}
