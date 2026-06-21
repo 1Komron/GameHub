@@ -22,6 +22,7 @@ export interface GameTransport {
 
   createRoom: (gameId: GameId) => Promise<RoomSnapshot>;
   joinRoom: (code: string) => Promise<RoomSnapshot>;
+  joinRoomById: (matchId: string) => Promise<RoomSnapshot>;
   leaveRoom: () => void;
   setReady: (ready: boolean) => void;
   startMatch: () => void;

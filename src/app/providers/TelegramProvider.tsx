@@ -2,7 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {init, miniApp, themeParams, retrieveLaunchParams} from '@telegram-apps/sdk-react';
 import {swipeBehavior} from '@telegram-apps/sdk';
 import {useUserStore} from '../../entities/user/model/store';
-import {loginWithTelegram} from '../../shared/api/auth/authService';
+import {loginWithTelegram, getToken} from '../../shared/api/auth/authService';
+import {initPresenceSocket} from '../../shared/api/presenceSocket';
 
 interface TelegramProviderProps {
     children: React.ReactNode;
@@ -29,7 +30,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
                 });
 
                 await loginWithTelegram(`dev_mock_${userNum}`); // без try/catch
-
+                const token = getToken();
+                if (token) initPresenceSocket(token);
 
                 setIsInitialized(true);
                 return;
@@ -150,6 +152,8 @@ export const TelegramProvider: React.FC<TelegramProviderProps> = ({ children }) 
 
                     if (typeof initDataRaw === 'string') {
                         await loginWithTelegram(initDataRaw);
+                        const token = getToken();
+                        if (token) initPresenceSocket(token);
                     } else {
                         // eslint-disable-next-line no-console
                         console.warn('[AUTH] initDataRaw not available, skipping Telegram auth');

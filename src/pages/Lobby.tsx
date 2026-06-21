@@ -1,33 +1,47 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Copy, Check, Play } from 'lucide-react';
+import { Copy, Check, Play, Users } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { Avatar } from '../shared/ui/Avatar';
 import { TelegramBottomSpacer } from '../shared/ui/TelegramBottomSpacer';
+import { OpponentsModal } from '../widgets/recent-opponents/OpponentsModal';
+import { HeaderActionsContext } from '../shared/context/HeaderActionsContext';
 import { useRoomStore } from '../entities/room/model/store';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { t } from '../shared/i18n';
 import { soundService } from '../shared/lib/sound';
+
 export const Lobby: React.FC = () => {
-  const { code } = useParams<{
-    code: string;
-  }>();
+  const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const { room, mySlot, startMatch, leaveRoom, error, isCreator } = useRoomStore();
+  const { room, mySlot, startMatch, leaveRoom, error, isCreator, matchId } = useRoomStore();
   const { animationsEnabled } = useSettingsStore();
   const [copied, setCopied] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { setExtraActions } = useContext(HeaderActionsContext);
+  
+  useEffect(() => {
+    setExtraActions(
+      <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(true)}>
+        <Users size={22} />
+      </Button>
+    );
+    return () => setExtraActions(null);
+  }, [setExtraActions]);
+  
   // Get mode from search params
   const searchParams = new URLSearchParams(window.location.search);
   const mode = searchParams.get('mode') || 'classic';
+  
   // Redirect if no room
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!room && code) {
         navigate('/');
       }
-    }, 500); // small delay to allow store to update
+    }, 500); 
     return () => clearTimeout(timer);
   }, [room, code, navigate]);
 
@@ -44,6 +58,7 @@ export const Lobby: React.FC = () => {
       navigate(`/play/online/${room.code}?mode=${mode}`);
     }
   }, [room?.status, room?.code, navigate, mode]);
+
   if (!room) return null;
   const me = room.players.find((p) => p.slot === mySlot);
   const isReady = me?.ready || false;
@@ -69,9 +84,11 @@ export const Lobby: React.FC = () => {
     leaveRoom();
     navigate('/');
   };
+
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30 h-screen overflow-hidden" style={{ overscrollBehavior: 'none' }}>
       <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6">
+        <OpponentsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} currentMatchId={matchId ?? ''} />
         {error && (
           <div className="p-3 bg-red-500/10 text-red-500 rounded-lg text-sm text-center">
             {error}
@@ -90,7 +107,6 @@ export const Lobby: React.FC = () => {
             </span>
             {copied ?
             <Check className="text-green-500 flex-shrink-0" /> :
-
             <Copy className="text-tg-hint flex-shrink-0" />
             }
           </div>
@@ -103,26 +119,14 @@ export const Lobby: React.FC = () => {
           {room.players.map((player) =>
           <motion.div
             key={player.id}
-            initial={
-            animationsEnabled ?
-            {
-              opacity: 0,
-              x: -20
-            } :
-            false
-            }
-            animate={{
-              opacity: 1,
-              x: 0
-            }}>
-            
+            initial={animationsEnabled ? { opacity: 0, x: -20 } : false}
+            animate={{ opacity: 1, x: 0 }}>
               <GlassCard className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4 min-w-0">
                   <Avatar
                   src={player.photoUrl}
                   fallback={player.name.charAt(0)}
                   size="md" />
-                
                   <div className="min-w-0">
                     <p className="font-bold text-tg-text truncate">
                       {player.name} {player.id === me?.id && '(You)'}
@@ -141,18 +145,9 @@ export const Lobby: React.FC = () => {
 
           {room.players.length < 2 &&
           <motion.div
-            initial={
-            animationsEnabled ?
-            {
-              opacity: 0
-            } :
-            false
-            }
-            animate={{
-              opacity: 1
-            }}
+            initial={animationsEnabled ? { opacity: 0 } : false}
+            animate={{ opacity: 1 }}
             className="flex items-center justify-center p-8 border-2 border-dashed border-tg-hint/30 rounded-2xl">
-            
               <div className="flex flex-col items-center gap-2 text-tg-hint">
                 <div className="w-8 h-8 rounded-full border-2 border-t-tg-primary animate-spin" />
                 <p>{t('lobby.waiting')}</p>
@@ -193,5 +188,4 @@ export const Lobby: React.FC = () => {
         <TelegramBottomSpacer />
       </main>
     </div>);
-
 };

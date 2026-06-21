@@ -97,6 +97,21 @@ export class RealSocketTransport implements GameTransport {
     return matchViewToSnapshot(match);
   }
 
+  async joinRoomById(matchId: string): Promise<RoomSnapshot> {
+    const response = await fetch(`${API_URL}/api/matches/${matchId}/join`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to join match');
+    const result = await response.json();
+    const match = result.data;
+    this.matchId = match.matchId;
+    this.openWebSocket(match.matchId);
+
+    return matchViewToSnapshot(match);
+  }
+
   leaveRoom(): void {
     this.matchId = null;
     this.stopHeartbeat();

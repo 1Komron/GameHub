@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://game-hub-back.duckdns.org';
+export const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://game-hub-back.duckdns.org';
 
 let jwtToken: string | null = null;
 

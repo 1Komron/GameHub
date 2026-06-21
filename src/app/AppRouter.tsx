@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Home } from '../pages/Home';
 import { ModeSelect } from '../pages/ModeSelect';
 import { Lobby } from '../pages/Lobby';
@@ -10,7 +10,7 @@ import { Settings } from '../pages/Settings';
 import { TelegramNavigation } from './providers/TelegramNavigation';
 export const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter>
+    <>
       <TelegramNavigation />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -22,6 +22,6 @@ export const AppRouter: React.FC = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>);
+    </>);
 
 };

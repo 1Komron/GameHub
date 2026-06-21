@@ -15,6 +15,7 @@ interface RoomState {
   connect: (identity: LocalIdentity) => void;
   createRoom: (gameId: GameId) => Promise<void>;
   joinRoom: (code: string) => Promise<void>;
+  joinRoomById: (matchId: string) => Promise<void>;
   setReady: (ready: boolean) => void;
   startMatch: () => void;
   leaveRoom: () => void;
@@ -79,6 +80,21 @@ export const useRoomStore = create<RoomState>((set) => {
       } catch (err: unknown) {
         set({
           error: err instanceof Error ? err.message : 'Failed to join room',
+          isConnecting: false
+        });
+      }
+    },
+
+    joinRoomById: async (matchId: string) => {
+      set({ isConnecting: true, error: null });
+      try {
+        const room = await transport.joinRoomById(matchId);
+        const currentUserId = String(useUserStore.getState().user?.id);
+        const myPlayer = room.players.find((p) => p.id === currentUserId);
+        set({ room, mySlot: myPlayer?.slot ?? null, isConnecting: false, matchId, isCreator: false });
+      } catch (err: unknown) {
+        set({
+          error: err instanceof Error ? err.message : 'Failed to join match',
           isConnecting: false
         });
       }
