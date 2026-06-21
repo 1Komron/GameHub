@@ -123,6 +123,10 @@ export class MockTransport implements GameTransport {
     return Promise.resolve(structuredClone(this.room));
   }
 
+  joinRoomById(matchId: string): Promise<RoomSnapshot> {
+    return this.joinRoom(matchId);
+  }
+
   leaveRoom(): void {
     this.room = null;
   }
