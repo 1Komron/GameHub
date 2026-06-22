@@ -44,7 +44,7 @@ export const PlayLocal: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-start h-screen max-w-md mx-auto w-full overflow-hidden" style={{ overscrollBehavior: 'none' }}>
             <TelegramTopSpacer/>
-            <main className="flex-1 flex flex-col items-center justify-center p-4 gap-2 w-full">
+            <main className="flex-1 flex flex-col items-center justify-center p-4 gap-2 w-full" style={{ marginTop: '-100px' }}>
                 <AnimatePresence mode="wait">
                     {!isGameOver ? (
                         <motion.div
@@ -93,7 +93,7 @@ export const PlayLocal: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <div className="relative w-full flex flex-col items-center" style={{ marginTop: '-5px' }}>
+                <div className="relative w-full flex flex-col items-center">
                     <GameBoard />
                     <div className="absolute top-full mt-4 w-full flex justify-center">
                         <GameResultActions
