@@ -93,19 +93,23 @@ export const PlayLocal: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <GameBoard />
-                <GameResultActions
-                  isVisible={isGameOver}
-                  status={status}
-                  winner={winner}
-                  mode="local"
-                  onPlayAgain={() => { soundService.play('click'); resetGame(); }}
-                  onBackToMenu={() => { 
-                    soundService.play('click'); 
-                    resetGame(); 
-                    navigate(`/game/${gameId}/mode`);
-                  }}
-                />
+                <div className="relative w-full flex flex-col items-center">
+                    <GameBoard />
+                    <div className="absolute top-full mt-4 w-full flex justify-center">
+                        <GameResultActions
+                          isVisible={isGameOver}
+                          status={status}
+                          winner={winner}
+                          mode="local"
+                          onPlayAgain={() => { soundService.play('click'); resetGame(); }}
+                          onBackToMenu={() => {
+                            soundService.play('click');
+                            resetGame();
+                            navigate(`/game/${gameId}/mode`);
+                          }}
+                        />
+                    </div>
+                </div>
                 <TelegramBottomSpacer />
             </main>
         </div>

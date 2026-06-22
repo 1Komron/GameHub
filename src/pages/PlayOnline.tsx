@@ -107,24 +107,28 @@ export const PlayOnline: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <GameBoard />
-                <GameResultActions
-                  isVisible={isGameOver}
-                  status={status}
-                  winner={mySlot !== null ? (iWon ? mySlot : (mySlot === 0 ? 1 : 0)) : null}
-                  mode="online"
-                  isWinner={iWon}
-                  onPlayAgain={() => {
-                    // eslint-disable-next-line @typescript-eslint/no-empty-function
-                  }}
-                  onBackToMenu={() => {
-                    resetGame();
-                    const { room } = useRoomStore.getState();
-                    const baseGameId = (room?.gameId ?? 'tic-tac-toe').replace('-shift', '');
-                    useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
-                    navigate(`/game/${baseGameId}/mode`);
-                  }}
-                />
+                <div className="relative w-full flex flex-col items-center">
+                    <GameBoard />
+                    <div className="absolute top-full mt-4 w-full flex justify-center">
+                        <GameResultActions
+                          isVisible={isGameOver}
+                          status={status}
+                          winner={mySlot !== null ? (iWon ? mySlot : (mySlot === 0 ? 1 : 0)) : null}
+                          mode="online"
+                          isWinner={iWon}
+                          onPlayAgain={() => {
+                            // eslint-disable-next-line @typescript-eslint/no-empty-function
+                          }}
+                          onBackToMenu={() => {
+                            resetGame();
+                            const { room } = useRoomStore.getState();
+                            const baseGameId = (room?.gameId ?? 'tic-tac-toe').replace('-shift', '');
+                            useRoomStore.setState({ room: null, mySlot: null, matchId: null, isCreator: false });
+                            navigate(`/game/${baseGameId}/mode`);
+                          }}
+                        />
+                    </div>
+                </div>
                 <TelegramBottomSpacer />
             </main>
         </div>
