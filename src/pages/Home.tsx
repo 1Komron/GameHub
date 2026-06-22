@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { TelegramTopSpacer } from '../shared/ui/TelegramTopSpacer';
 import { Play, BarChart2, Settings as SettingsIcon, Lock } from 'lucide-react';
 import { UserCard } from '../shared/ui/UserCard';
 import { Button } from '../shared/ui/Button';
@@ -41,6 +42,7 @@ export const Home: React.FC = () => {
   };
   return (
     <div className="h-full overflow-y-auto">
+      <TelegramTopSpacer />
       <motion.div
         className="flex flex-col p-4 sm:p-6 max-w-md mx-auto w-full gap-6 pb-24"
         variants={animationsEnabled ? containerVariants : undefined}

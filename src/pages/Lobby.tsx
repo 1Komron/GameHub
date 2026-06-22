@@ -5,6 +5,7 @@ import { Copy, Check, Users } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { Avatar } from '../shared/ui/Avatar';
+import { TelegramTopSpacer } from '../shared/ui/TelegramTopSpacer';
 import { TelegramBottomSpacer } from '../shared/ui/TelegramBottomSpacer';
 import { OpponentsModal } from '../widgets/recent-opponents/OpponentsModal';
 import { useRoomStore } from '../entities/room/model/store';
@@ -76,6 +77,7 @@ export const Lobby: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30 h-screen overflow-hidden" style={{ overscrollBehavior: 'none' }}>
+      <TelegramTopSpacer />
       <main className="flex-1 flex flex-col justify-center p-4 sm:p-6 gap-6">
         <OpponentsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} currentMatchId={matchId ?? ''} />
 

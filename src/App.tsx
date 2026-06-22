@@ -16,7 +16,7 @@ export function App() {
         </TelegramProvider>
       </BrowserRouter>
       
-      <Toaster theme="dark" richColors position="top-center" offset="95px" />
+      <Toaster theme="dark" richColors position="top-center" offset="65px" />
     </div>
   );
 }
