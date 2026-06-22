@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { useGameStore } from '../store';
+import { useSettingsStore } from '../../../entities/settings/model/store';
 import { cn } from '../../../shared/lib/utils';
 import { soundService } from '../../../shared/lib/sound';
 import { AnimatedX } from './AnimatedX';
@@ -13,6 +14,7 @@ interface GameBoardProps {
 
 export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => {
   const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece, gameId, expiringCell } = useGameStore();
+  const { animationsEnabled } = useSettingsStore();
 
   const isShift = gameId === 'tic-tac-toe-shift';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,35 +128,37 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
       <div className="relative w-full max-w-[340px] aspect-square mx-auto">
         
         {/* 1. DRIFTING CYBER-PARTICLES (Neon dust behind board) */}
-        <div className="absolute inset-0 -z-20 overflow-hidden pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ 
-                x: Math.random() * 260 - 130, 
-                y: Math.random() * 260 - 130, 
-                opacity: Math.random() * 0.2 + 0.1,
-                scale: Math.random() * 0.5 + 0.5 
-              }}
-              animate={{
-                y: [null, Math.random() * 80 - 40, Math.random() * 80 - 40],
-                x: [null, Math.random() * 80 - 40, Math.random() * 80 - 40],
-                opacity: [0.1, 0.45, 0.1],
-              }}
-              transition={{
-                duration: 12 + i * 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className={cn(
-                "absolute w-1.5 h-1.5 rounded-full",
-                i % 2 === 0 
-                  ? "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" 
-                  : "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]"
-              )}
-            />
-          ))}
-        </div>
+        {animationsEnabled && (
+          <div className="absolute inset-0 -z-20 overflow-hidden pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: Math.random() * 260 - 130, 
+                  y: Math.random() * 260 - 130, 
+                  opacity: Math.random() * 0.2 + 0.1,
+                  scale: Math.random() * 0.5 + 0.5 
+                }}
+                animate={{
+                  y: [null, Math.random() * 80 - 40, Math.random() * 80 - 40],
+                  x: [null, Math.random() * 80 - 40, Math.random() * 80 - 40],
+                  opacity: [0.1, 0.45, 0.1],
+                }}
+                transition={{
+                  duration: 12 + i * 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className={cn(
+                  "absolute w-1.5 h-1.5 rounded-full",
+                  i % 2 === 0 
+                    ? "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" 
+                    : "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]"
+                )}
+              />
+            ))}
+          </div>
+        )}
 
         {/* 2. DYNAMIC AMBIENT TURN GLOW (Atmospheric background behind board) */}
         <div className="absolute inset-0 -z-10 flex items-center justify-center pointer-events-none">
@@ -165,11 +169,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
             }}
             transition={{
               duration: 4,
-              repeat: mergeStatus === 'completed' ? 0 : Infinity,
+              repeat: mergeStatus === 'completed' ? 0 : (animationsEnabled ? Infinity : 0),
               ease: "easeInOut"
             }}
             className={cn(
               "absolute w-64 h-64 rounded-full blur-[80px] transition-colors duration-700 ease-in-out",
+              !animationsEnabled && "blur-[40px]",
               isGameOver
                 ? (winnerMark === 0 
                     ? 'bg-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.3)]' 
@@ -187,7 +192,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
         <div className="w-full h-full bg-[#0d1321]/80 border border-slate-800/80 rounded-3xl p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-md relative z-10 overflow-hidden">
           
           {/* Holographic scanning line (only during play or drawing phase) */}
-          {mergeStatus !== 'completed' && (
+          {mergeStatus !== 'completed' && animationsEnabled && (
             <motion.div
               animate={{ y: ['-100%', '200%'] }}
               transition={{
