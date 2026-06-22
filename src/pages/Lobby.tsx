@@ -76,40 +76,43 @@ export const Lobby: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30 h-screen overflow-hidden" style={{ overscrollBehavior: 'none' }}>
-      <header className="flex justify-between items-center p-4">
-        <div />
-        <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(true)}>
-          <Users size={22} />
-        </Button>
-      </header>
-      <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6">
+      <main className="flex-1 flex flex-col justify-center p-4 sm:p-6 gap-6">
         <OpponentsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} currentMatchId={matchId ?? ''} />
-
 
         {error && (
           <div className="p-3 bg-red-500/10 text-red-500 rounded-lg text-sm text-center">
             {error}
           </div>
         )}
-        <GlassCard className="flex flex-col items-center justify-center p-8 text-center">
-          <span className="text-sm text-tg-hint uppercase tracking-wider mb-2">
+        <GlassCard className="flex flex-col p-8">
+          <span className="text-sm text-tg-hint uppercase tracking-wider mb-2 text-center">
             {t('lobby.roomCode')}
           </span>
           <div
-            className="flex items-center gap-3 bg-tg-bg px-6 py-3 rounded-2xl cursor-pointer hover:bg-tg-secondary transition-colors mb-4 min-w-0"
+            className="flex items-center justify-center gap-3 bg-tg-bg px-6 py-3 rounded-2xl cursor-pointer hover:bg-tg-secondary transition-colors mb-4"
             onClick={handleCopy}>
             
-            <span className="text-4xl font-mono font-bold tracking-widest text-tg-text truncate">
+            <span className="text-4xl font-mono font-bold tracking-widest text-tg-text">
               {room.code}
             </span>
             {copied ?
-            <Check className="text-green-500 flex-shrink-0" /> :
-            <Copy className="text-tg-hint flex-shrink-0" />
+            <Check className="text-green-500" /> :
+            <Copy className="text-tg-hint" />
             }
           </div>
-          <span className="text-sm text-tg-hint">
-            Game: <span className="font-bold text-tg-text">{room.gameId?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
-          </span>
+          <div className="relative flex items-center justify-center mb-2">
+            <span className="text-sm text-tg-hint">
+              Game: <span className="font-bold text-tg-text">{room.gameId?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsModalOpen(true)}
+              className="absolute right-0"
+            >
+              <Users size={20} />
+            </Button>
+          </div>
         </GlassCard>
 
         <div className="flex flex-col gap-3">
@@ -154,26 +157,29 @@ export const Lobby: React.FC = () => {
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
-          {!isReady && (
-            <Button size="lg" fullWidth onClick={handleReady}>
-              Ready!
-            </Button>
-          )}
-          {isReady && !isCreator && (
-            <Button size="lg" fullWidth disabled>
-              Waiting for host...
-            </Button>
-          )}
-          {isCreator && (
-            <Button
-              size="lg"
-              fullWidth
-              onClick={handleStart}
-              disabled={!canStart}>
-              <Play className="mr-2" size={20} />
-              {canStart ? 'Start Game!' : 'Waiting for players...'}
-            </Button>
-          )}
+          {(() => {
+            const getActionButtonState = () => {
+              if (!isReady) {
+                return { label: 'Ready!', disabled: false, onClick: handleReady };
+              }
+              if (isCreator && canStart) {
+                return { label: 'Start Game!', disabled: false, onClick: handleStart };
+              }
+              return { label: 'Waiting for players...', disabled: true, onClick: undefined };
+            };
+            const actionState = getActionButtonState();
+            return (
+              <Button
+                size="lg"
+                fullWidth
+                disabled={actionState.disabled}
+                onClick={actionState.onClick}
+                className={actionState.disabled ? 'bg-tg-secondary text-tg-hint' : ''}
+              >
+                {actionState.label}
+              </Button>
+            );
+          })()}
           <Button
             variant="ghost"
             fullWidth

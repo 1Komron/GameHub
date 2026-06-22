@@ -6,13 +6,7 @@ import { TelegramLayout } from './app/TelegramLayout';
 import { InviteHandler } from './widgets/invite/InviteHandler';
 export function App() {
   return (
-    <div className="h-screen w-full bg-tg-bg text-tg-text antialiased selection:bg-tg-primary/30 overflow-y-auto overscroll-y-contain">
-
-      <div
-        className="flex-none bg-tg-bg"
-        style={{ height: '90px' }}
-      />
-
+    <div className="h-screen w-full bg-tg-bg text-tg-text antialiased selection:bg-tg-primary/30 overflow-hidden">
       <BrowserRouter>
         <TelegramProvider>
           <TelegramLayout>
@@ -22,8 +16,7 @@ export function App() {
         </TelegramProvider>
       </BrowserRouter>
       
-      <Toaster theme="dark" richColors position="top-center" />
-
+      <Toaster theme="dark" richColors position="top-center" offset="95px" />
     </div>
   );
 }
