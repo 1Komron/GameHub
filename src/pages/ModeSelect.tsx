@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Users, Globe, Plus, LogIn, Play } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
+import { Header } from '../shared/ui/Header';
 import { TelegramBottomSpacer } from '../shared/ui/TelegramBottomSpacer';
 import { useSettingsStore } from '../entities/settings/model/store';
 import { useRoomStore } from '../entities/room/model/store';
@@ -68,6 +69,7 @@ export const ModeSelect: React.FC = () => {
   };
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30">
+      <Header />
       <main className="flex-1 p-4 sm:p-6 flex flex-col gap-6">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold text-tg-text mb-2">{game.title}</h2>

@@ -10,6 +10,7 @@ import {
 'lucide-react';
 import { useStatisticsStore } from '../entities/statistics/model/store';
 import { useSettingsStore } from '../entities/settings/model/store';
+import { Header } from '../shared/ui/Header';
 import { Button } from '../shared/ui/Button';
 import { GlassCard } from '../shared/ui/GlassCard';
 import { getGameById } from '../shared/config/games';
@@ -52,6 +53,7 @@ export const Statistics: React.FC = () => {
   };
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30">
+      <Header />
       <motion.main
         className="flex-1 p-4 sm:p-6 flex flex-col gap-4"
         variants={animationsEnabled ? containerVariants : undefined}
