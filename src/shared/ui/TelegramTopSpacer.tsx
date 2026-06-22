@@ -6,6 +6,8 @@ export const TelegramTopSpacer: React.FC = () => {
   const safeAreaTop = viewport.safeAreaInsetTop();
   const height = `calc(${safeAreaTop}px + 56px)`;
 
+  console.log('[TelegramTopSpacer] safeAreaTop:', safeAreaTop, 'computed height:', height);
+
   return (
     <div 
       className="flex-none w-full bg-tg-bg" 
