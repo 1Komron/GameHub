@@ -93,7 +93,7 @@ export const PlayLocal: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <div className="relative w-full flex flex-col items-center">
+                <div className="relative w-full flex flex-col items-center" style={{ marginTop: '-5px' }}>
                     <GameBoard />
                     <div className="absolute top-full mt-4 w-full flex justify-center">
                         <GameResultActions
