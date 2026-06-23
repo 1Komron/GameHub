@@ -3,34 +3,27 @@ import { motion } from 'framer-motion';
 import { cn } from '../../../shared/lib/utils';
 
 export const AnimatedX: React.FC<{ className?: string; isRemoving?: boolean }> = ({ className, isRemoving }) => (
-  <svg viewBox="0 0 100 100" className={cn(className, "drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]")}>
-    {/* "\" stroke — draws FIRST on appear, disappears SECOND on remove */}
-    <motion.path
-      d="M 25 25 L 75 75"
-      stroke="#60a5fa"
-      strokeWidth="12"
-      strokeLinecap="round"
-      initial={{ pathLength: isRemoving ? 1 : 0 }}
-      animate={{ pathLength: isRemoving ? 0 : 1 }}
-      transition={{ 
-        duration: 0.125, 
-        ease: "linear",
-        delay: isRemoving ? 0.125 : 0 
-      }}
-    />
-    {/* "/" stroke — draws SECOND on appear, disappears FIRST on remove */}
-    <motion.path
-      d="M 75 25 L 25 75"
-      stroke="#60a5fa"
-      strokeWidth="12"
-      strokeLinecap="round"
-      initial={{ pathLength: isRemoving ? 1 : 0 }}
-      animate={{ pathLength: isRemoving ? 0 : 1 }}
-      transition={{ 
-        duration: 0.125, 
-        ease: "linear",
-        delay: isRemoving ? 0 : 0.125 
-      }}
-    />
-  </svg>
+  <motion.div
+    initial={{ opacity: 0, scale: 0.5 }}
+    animate={{ opacity: isRemoving ? 0 : 1, scale: isRemoving ? 0.5 : 1 }}
+    transition={{ duration: 0.15, ease: "easeOut" }}
+    className={cn(className)}
+  >
+    <svg viewBox="0 0 100 100">
+      <path
+        d="M 25 25 L 75 75"
+        stroke="#60a5fa"
+        strokeWidth="12"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M 75 25 L 25 75"
+        stroke="#60a5fa"
+        strokeWidth="12"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  </motion.div>
 );

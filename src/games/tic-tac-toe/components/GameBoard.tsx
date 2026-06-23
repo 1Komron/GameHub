@@ -173,8 +173,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
               ease: "easeInOut"
             }}
             className={cn(
-              "absolute w-64 h-64 rounded-full blur-[80px] transition-colors duration-700 ease-in-out",
-              !animationsEnabled && "blur-[40px]",
+              "absolute w-64 h-64 rounded-full transition-colors duration-700 ease-in-out",
+              animationsEnabled ? "blur-[80px]" : "",
+              !animationsEnabled && "blur-none",
               isGameOver
                 ? (winnerMark === 0 
                     ? 'bg-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.3)]' 
@@ -189,7 +190,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
         </div>
 
         {/* 3. THE MAIN BOARD CONTAINER */}
-        <div className="w-full h-full bg-[#0d1321]/80 border border-slate-800/80 rounded-3xl p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-md relative z-10 overflow-hidden">
+        <div className={cn(
+          "w-full h-full border border-slate-900/60 rounded-3xl p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] relative z-10 overflow-hidden",
+          animationsEnabled 
+            ? "bg-[#0d1321]/80 backdrop-blur-md" 
+            : "bg-[#0d1321]/95"
+        )}>
           
           {/* Holographic scanning line (only during play or drawing phase) */}
           {mergeStatus !== 'completed' && animationsEnabled && (
