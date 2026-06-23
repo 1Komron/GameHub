@@ -22,6 +22,7 @@ export default {
       animation: {
         'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'blink': 'blink 1.2s ease-in-out infinite',
+        'hud-pulse': 'hudPulse 2s ease-in-out infinite',
       },
       keyframes: {
         popIn: {
@@ -31,6 +32,10 @@ export default {
         blink: {
           '0%, 100%': { opacity: '1', filter: 'brightness(1.2) drop-shadow(0 0 8px currentColor)' },
           '50%': { opacity: '0.5', filter: 'brightness(0.8)' },
+        },
+        hudPulse: {
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.8' },
         }
       }
     },

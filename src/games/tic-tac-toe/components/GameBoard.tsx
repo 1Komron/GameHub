@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store';
 import { useSettingsStore } from '../../../entities/settings/model/store';
 import { cn } from '../../../shared/lib/utils';
 import { soundService } from '../../../shared/lib/sound';
 import { AnimatedX } from './AnimatedX';
 import { AnimatedO } from './AnimatedO';
+import { Cell } from './Cell';
 import type { TicTacToeMove } from '../engine';
 
 interface GameBoardProps {
@@ -69,12 +70,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
 
   const canInteract = ready && !isGameOver && (mode === 'local' || mode === 'online' && currentSlot === mySlot);
 
-  const handleCellClick = (index: number) => {
+  const handleCellClick = useCallback((index: number) => {
     const isOccupied = isShift ? board[index] !== null : board[index] !== null;
     if (!canInteract || isOccupied) return;
     soundService.play('move');
     makeMove({ index } as TicTacToeMove);
-  };
+  }, [canInteract, isShift, board, makeMove]);
 
   if (!ready) return null;
 
@@ -124,7 +125,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const isFreshBoard = board.every((cell: any) => cell === null);
 
   return (
-    <LayoutGroup>
       <div className="relative w-full max-w-[340px] aspect-square mx-auto">
         
         {/* 1. DRIFTING CYBER-PARTICLES (Neon dust behind board) */}
@@ -226,62 +226,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                   : 1;
 
                 const cellSeat = isShift ? cell?.seat : cell;
-                const isOccupied = cell !== null;
 
                 return (
-                  <motion.button
+                  <Cell
                     key={index}
-                    whileTap={canInteract && !isOccupied && !isGameOver ? { scale: 0.95 } : {}}
-                    onClick={() => handleCellClick(index)}
-                    disabled={!canInteract}
-                    className={cn(
-                      'relative flex items-center justify-center rounded-2xl bg-slate-950/50 border border-slate-900/60 transition-all duration-300 outline-none overflow-hidden',
-                      canInteract && !isOccupied && 'md:hover:bg-slate-900/30 md:hover:border-blue-500/30 active:bg-slate-900/20 active:border-blue-400/40 shadow-inner'
-                    )}
-                  >
-                    {/* HUD Corner Accents on Active Empty Cells */}
-                    {canInteract && !isOccupied && !isGameOver && (
-                      <motion.div
-                        animate={{ opacity: [0.4, 0.8, 0.4] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                        className="absolute inset-0 pointer-events-none"
-                      >
-                        {/* Top-Left Bracket */}
-                        <span className={cn(
-                          "absolute top-1.5 left-1.5 w-2 h-2 border-t border-l rounded-tl-sm transition-colors duration-500",
-                          currentSlot === 0 ? "border-blue-500/40" : "border-red-500/40"
-                        )} />
-                        {/* Bottom-Right Bracket */}
-                        <span className={cn(
-                          "absolute bottom-1.5 right-1.5 w-2 h-2 border-b border-r rounded-br-sm transition-colors duration-500",
-                          currentSlot === 0 ? "border-blue-500/40" : "border-red-500/40"
-                        )} />
-                      </motion.div>
-                    )}
-
-                    {/* Render Core Symbol */}
-                    <AnimatePresence mode="popLayout">
-                      {isOccupied && !isHiddenDuringMerge && (
-                        <motion.div
-                          key={`cell-${index}-${cellSeat}`}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: symbolOpacity }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ duration: 0.1 }}
-                          className={cn(
-                            "flex items-center justify-center w-full h-full",
-                            index === effectiveExpiringCell && mergeStatus === 'idle' && !isGameOver && 'animate-blink'
-                          )}
-                        >
-                          {cellSeat === 0 ? (
-                            <AnimatedX className="w-12 h-12" />
-                          ) : (
-                            <AnimatedO className="w-10 h-10" />
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
+                    index={index}
+                    cellValue={cellSeat}
+                    isHiddenDuringMerge={isHiddenDuringMerge}
+                    symbolOpacity={symbolOpacity}
+                    isExpiring={index === effectiveExpiringCell && mergeStatus === 'idle'}
+                    canInteract={canInteract}
+                    isGameOver={isGameOver}
+                    currentSlot={currentSlot}
+                    animationsEnabled={animationsEnabled}
+                    onCellClick={handleCellClick}
+                  />
                 );
               })}
             </motion.div>
@@ -475,7 +434,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
             )}
           </div>
         </div>
-      </div>
-    </LayoutGroup>
+    </div>
   );
 };
