@@ -17,6 +17,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const { engine, gameState, makeMove, mode, mySlot, variant, ghostPiece, gameId, expiringCell } = useGameStore();
   const { animationsEnabled } = useSettingsStore();
 
+  console.log('[BoardDebug] render', { animationsEnabled });
+
   const isShift = gameId === 'tic-tac-toe-shift';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const boardState = gameState as any;

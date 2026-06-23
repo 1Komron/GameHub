@@ -65,10 +65,10 @@ export const Cell = React.memo(({
         {isOccupied && !isHiddenDuringMerge && (
           <motion.div
             key={`cell-${index}-${cellValue}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: symbolOpacity }}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: symbolOpacity, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.1 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
               "flex items-center justify-center w-full h-full",
               isExpiring && !isGameOver && 'animate-blink'

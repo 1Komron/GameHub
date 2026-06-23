@@ -21,6 +21,9 @@ export const Settings: React.FC = () => {
     toggleAnimations,
     setLanguage
   } = useSettingsStore();
+
+  console.log('[SettingsDebug]', { animationsEnabled, soundEnabled, timestamp: Date.now() });
+
   const containerVariants = {
     hidden: {
       opacity: 0

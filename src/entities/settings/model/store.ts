@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Language } from '../../../shared/i18n';
 
+const getDefaultAnimationsEnabled = () => {
+  if (typeof navigator === 'undefined') return true;
+  return !/Android/i.test(navigator.userAgent);
+};
+
 interface SettingsState {
   soundEnabled: boolean;
   animationsEnabled: boolean;
@@ -16,7 +21,7 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       soundEnabled: true,
-      animationsEnabled: true,
+      animationsEnabled: getDefaultAnimationsEnabled(),
       language: 'en',
 
       toggleSound: () =>
