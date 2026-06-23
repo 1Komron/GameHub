@@ -24,37 +24,25 @@ export const Settings: React.FC = () => {
 
   console.log('[SettingsDebug]', { animationsEnabled, soundEnabled, timestamp: Date.now() });
 
-  const containerVariants = {
-    hidden: {
-      opacity: 0
-    },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  const itemVariants = {
-    hidden: {
-      opacity: 0,
-      y: 10
-    },
-    visible: {
-      opacity: 1,
-      y: 0
-    }
-  };
+  const containerVariants = (enabled: boolean) => ({
+    hidden: { opacity: enabled ? 0 : 1 },
+    visible: { opacity: 1, transition: { staggerChildren: enabled ? 0.1 : 0, duration: enabled ? undefined : 0 } }
+  });
+  const itemVariants = (enabled: boolean) => ({
+    hidden: { opacity: enabled ? 0 : 1, y: enabled ? 10 : 0 },
+    visible: { opacity: 1, y: 0, transition: { duration: enabled ? undefined : 0 } }
+  });
+
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full bg-tg-secondary/30">
       <Header />
       <motion.main
         className="flex-1 p-4 sm:p-6 flex flex-col gap-6"
-        variants={animationsEnabled ? containerVariants : undefined}
+        variants={containerVariants(animationsEnabled)}
         initial="hidden"
         animate="visible">
         
-        <motion.div variants={animationsEnabled ? itemVariants : undefined}>
+        <motion.div variants={itemVariants(animationsEnabled)}>
           <GlassCard className="flex flex-col p-0 overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5">
               <div className="flex items-center gap-3 min-w-0">
@@ -113,7 +101,7 @@ export const Settings: React.FC = () => {
           </GlassCard>
         </motion.div>
 
-        <motion.div variants={animationsEnabled ? itemVariants : undefined}>
+        <motion.div variants={itemVariants(animationsEnabled)}>
           <GlassCard className="flex flex-col p-0 overflow-hidden">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3 min-w-0">
@@ -134,7 +122,7 @@ export const Settings: React.FC = () => {
           </GlassCard>
         </motion.div>
 
-        <motion.div variants={animationsEnabled ? itemVariants : undefined}>
+        <motion.div variants={itemVariants(animationsEnabled)}>
           <GlassCard className="flex flex-col p-0 overflow-hidden">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3 min-w-0">

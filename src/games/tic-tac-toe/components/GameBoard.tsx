@@ -314,9 +314,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                       className="absolute w-[33.33%] h-[33.33%] flex items-center justify-center"
                     >
                       {winnerMark === 0 ? (
-                        <AnimatedX className="w-12 h-12" />
+                        <AnimatedX className="w-12 h-12" animationsEnabled={animationsEnabled} />
                       ) : (
-                        <AnimatedO className="w-10 h-10" />
+                        <AnimatedO className="w-10 h-10" animationsEnabled={animationsEnabled} />
                       )}
                     </motion.div>
                   );
@@ -355,7 +355,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                         winnerMark === 0 ? "border-blue-500 shadow-[0_0_20px_#3b82f6]" : "border-red-500 shadow-[0_0_20px_#ef4444]"
                       )}
                     />
-                    {winnerMark === 0 ? <AnimatedX className="w-16 h-16" /> : <AnimatedO className="w-14 h-14" />}
+                    {winnerMark === 0 ? <AnimatedX className="w-16 h-16" animationsEnabled={animationsEnabled} /> : <AnimatedO className="w-14 h-14" animationsEnabled={animationsEnabled} />}
                   </motion.div>
 
                   {/* Clean Winner Typography: Just "WINNER" with glow */}
@@ -393,14 +393,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                       className="w-16 h-16"
                     >
-                      <AnimatedX className="w-16 h-16" />
+                      <AnimatedX className="w-16 h-16" animationsEnabled={animationsEnabled} />
                     </motion.div>
                     <motion.div
                       animate={{ y: [0, 4, 0] }}
                       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }}
                       className="w-16 h-16"
                     >
-                      <AnimatedO className="w-16 h-16" />
+                      <AnimatedO className="w-16 h-16" animationsEnabled={animationsEnabled} />
                     </motion.div>
                   </div>
 
@@ -434,7 +434,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
                         transform: 'translate(-50%, -50%)',
                       }}
                     >
-                      {ghostPiece.slot === 0 ? <AnimatedX className="w-12 h-12" isRemoving={true} /> : <AnimatedO className="w-10 h-10" isRemoving={true} />}
+                      {ghostPiece.slot === 0 ? <AnimatedX className="w-12 h-12" isRemoving={true} animationsEnabled={animationsEnabled} /> : <AnimatedO className="w-10 h-10" isRemoving={true} animationsEnabled={animationsEnabled} />}
                     </div>
                   );
                 })()}

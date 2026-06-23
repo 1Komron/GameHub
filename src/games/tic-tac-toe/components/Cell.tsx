@@ -31,6 +31,16 @@ export const Cell = React.memo(({
 }: CellProps) => {
   const isOccupied = cellValue !== null;
 
+  const content = (
+    <div className={cn("flex items-center justify-center w-full h-full", isExpiring && !isGameOver && 'animate-blink')}>
+      {cellValue === 0 ? (
+        <AnimatedX className="w-12 h-12" animationsEnabled={animationsEnabled} />
+      ) : (
+        <AnimatedO className="w-10 h-10" animationsEnabled={animationsEnabled} />
+      )}
+    </div>
+  );
+
   return (
     <motion.button
       whileTap={canInteract && !isOccupied && !isGameOver ? { scale: 0.95 } : {}}
@@ -61,27 +71,28 @@ export const Cell = React.memo(({
       )}
 
       {/* Render Core Symbol */}
-      <AnimatePresence>
-        {isOccupied && !isHiddenDuringMerge && (
-          <motion.div
-            key={`cell-${index}-${cellValue}`}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: symbolOpacity, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className={cn(
-              "flex items-center justify-center w-full h-full",
-              isExpiring && !isGameOver && 'animate-blink'
-            )}
-          >
-            {cellValue === 0 ? (
-              <AnimatedX className="w-12 h-12" />
-            ) : (
-              <AnimatedO className="w-10 h-10" />
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {animationsEnabled ? (
+        <AnimatePresence>
+          {isOccupied && !isHiddenDuringMerge && (
+            <motion.div
+              key={`cell-${index}-${cellValue}`}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: symbolOpacity, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="flex items-center justify-center w-full h-full"
+            >
+              {cellValue === 0 ? (
+                <AnimatedX className="w-12 h-12" animationsEnabled={true} />
+              ) : (
+                <AnimatedO className="w-10 h-10" animationsEnabled={true} />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      ) : (
+        isOccupied && !isHiddenDuringMerge && content
+      )}
     </motion.button>
   );
 });
