@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store';
 import { useSettingsStore } from '../../../entities/settings/model/store';
@@ -20,7 +20,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   const isShift = gameId === 'tic-tac-toe-shift';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const boardState = gameState as any;
-  const board = boardState?.board ?? [];
+  const board = useMemo(() => boardState?.board ?? [], [boardState?.board]);
   const ready = Boolean(engine && gameState);
   const status = (ready && engine && gameState) ? engine.getStatus(gameState) : 'draw';
   const isGameOver = status === 'won' || status === 'draw';

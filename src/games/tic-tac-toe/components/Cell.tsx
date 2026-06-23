@@ -6,7 +6,7 @@ import { AnimatedO } from './AnimatedO';
 
 interface CellProps {
   index: number;
-  cellValue: any; // Seat or null (from engine)
+  cellValue: number | null; // Seat or null (from engine)
   isHiddenDuringMerge: boolean;
   symbolOpacity: number;
   isExpiring: boolean;
