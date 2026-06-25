@@ -1,6 +1,6 @@
 export const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://game-hub-back.duckdns.org';
 
-let jwtToken: string | null = null;
+let jwtToken: string | null = sessionStorage.getItem('jwt_token');
 
 export const loginWithTelegram = async (initData: string | undefined): Promise<void> => {
     if (!initData) {
@@ -21,6 +21,9 @@ export const loginWithTelegram = async (initData: string | undefined): Promise<v
     const result = await response.json();
     console.log('[DIAG] AUTH RESPONSE', result);
     jwtToken = result.data.accessToken;
+    if (jwtToken) {
+        sessionStorage.setItem('jwt_token', jwtToken);
+    }
     console.log('[DIAG] JWT TOKEN', jwtToken);
 };
 
@@ -28,9 +31,15 @@ export const getToken = (): string | null => jwtToken;
 
 export const setMockToken = (token: string) => {
   jwtToken = token;
+  sessionStorage.setItem('jwt_token', token);
 };
 
-export const authHeaders = () => ({
-    'Authorization': `Bearer ${jwtToken}`,
-    'Content-Type': 'application/json',
-});
+export const authHeaders = () => {
+    if (!jwtToken) {
+        throw new Error('No auth token available');
+    }
+    return {
+        'Authorization': `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json',
+    };
+};
