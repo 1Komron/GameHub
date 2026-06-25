@@ -7,6 +7,7 @@ import type {
   PlayerSlot } from
 '../../entities/game-engine/types';
 import { getTransport } from '../../shared/api/socket';
+import { useSettingsStore } from '../../entities/settings/model/store';
 import type { TicTacToeState, TicTacToeMove, TicTacToeVariant, TicTacToeShiftState } from './engine';
 import { applyShiftMove } from './engine';
 
@@ -175,7 +176,12 @@ export const useGameStore = create<GameStoreState<any, TicTacToeMove, TicTacToeV
       set({ gameState: nextState, ghostPiece: ghost });
 
       if (ghost) {
-        setTimeout(() => set({ ghostPiece: null }), 300);
+        const animationsEnabled = useSettingsStore.getState().animationsEnabled;
+        if (animationsEnabled) {
+          setTimeout(() => set({ ghostPiece: null }), 300);
+        } else {
+          set({ ghostPiece: null });
+        }
       }
 
       if (mode === 'online') {

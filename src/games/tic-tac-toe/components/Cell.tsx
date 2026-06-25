@@ -82,11 +82,13 @@ export const Cell = React.memo(({
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="flex items-center justify-center w-full h-full"
             >
-              {cellValue === 0 ? (
-                <AnimatedX className="w-12 h-12" animationsEnabled={true} />
-              ) : (
-                <AnimatedO className="w-10 h-10" animationsEnabled={true} />
-              )}
+              <div className={cn(isExpiring && !isGameOver && 'animate-blink')}>
+                {cellValue === 0 ? (
+                  <AnimatedX className="w-12 h-12" animationsEnabled={true} />
+                ) : (
+                  <AnimatedO className="w-10 h-10" animationsEnabled={true} />
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

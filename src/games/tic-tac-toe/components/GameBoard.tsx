@@ -126,6 +126,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ onAnimationComplete }) => 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isFreshBoard = board.every((cell: any) => cell === null);
 
+  console.log('[ExpiringDebug]', { effectiveExpiringCell, timestamp: Date.now() });
+
   return (
       <div className="relative w-full max-w-[340px] aspect-square mx-auto">
         
