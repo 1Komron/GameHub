@@ -6,7 +6,7 @@ import type {
 } from './events';
 import type { GameId } from '../../../entities/game-engine/types';
 import { API_URL, WS_URL } from '../../config/socket';
-import { authHeaders } from '../auth/authService';
+import { authHeaders, getToken } from '../auth/authService';
 
 /**
  * Production transport using native WebSockets + REST API.
@@ -199,7 +199,12 @@ export class RealSocketTransport implements GameTransport {
 
     // Delay for iOS WebView stability
     setTimeout(() => {
-        this.ws = new WebSocket(`${WS_URL}/ws/matches/${matchId}`);
+        const token = getToken();
+        if (!token) {
+            console.error('[Socket] No auth token available, cannot connect to match');
+            return;
+        }
+        this.ws = new WebSocket(`${WS_URL}/ws/matches/${matchId}?token=${token}`);
 
         this.ws.onopen = () => {
             console.log('[Socket] Connected');
