@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../../shared/lib/utils';
 
 export const AnimatedX: React.FC<{ className?: string; isRemoving?: boolean; animationsEnabled: boolean }> = ({ 
@@ -18,25 +17,25 @@ export const AnimatedX: React.FC<{ className?: string; isRemoving?: boolean; ani
 
   return (
     <svg viewBox="0 0 100 100" className={cn(className)}>
-      <motion.path
+      <path
+        pathLength={1}
         d="M 25 25 L 75 75"
         stroke="#60a5fa"
         strokeWidth="12"
         strokeLinecap="round"
         fill="none"
-        initial={{ pathLength: isRemoving ? 1 : 0 }}
-        animate={{ pathLength: isRemoving ? 0 : 1 }}
-        transition={{ duration: 0.125, ease: "linear", delay: isRemoving ? 0.125 : 0 }}
+        className={isRemoving ? "animate-draw-out-delay-1" : "animate-draw-in"}
+        style={{ strokeDasharray: 1 }}
       />
-      <motion.path
+      <path
+        pathLength={1}
         d="M 75 25 L 25 75"
         stroke="#60a5fa"
         strokeWidth="12"
         strokeLinecap="round"
         fill="none"
-        initial={{ pathLength: isRemoving ? 1 : 0 }}
-        animate={{ pathLength: isRemoving ? 0 : 1 }}
-        transition={{ duration: 0.125, ease: "linear", delay: isRemoving ? 0 : 0.125 }}
+        className={isRemoving ? "animate-draw-out" : "animate-draw-in-delay-1"}
+        style={{ strokeDasharray: 1 }}
       />
     </svg>
   );

@@ -23,6 +23,12 @@ export default {
         'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'blink': 'blink 1.2s ease-in-out infinite',
         'hud-pulse': 'hudPulse 2s ease-in-out infinite',
+        'draw-in': 'drawIn 0.125s linear both',
+        'draw-in-delay-1': 'drawIn 0.125s linear 0.125s both',
+        'draw-out': 'drawOut 0.125s linear both',
+        'draw-out-delay-1': 'drawOut 0.125s linear 0.125s both',
+        'circle-draw-in': 'drawIn 0.25s linear both',
+        'circle-draw-out': 'drawOut 0.25s linear both',
       },
       keyframes: {
         popIn: {
@@ -36,6 +42,14 @@ export default {
         hudPulse: {
           '0%, 100%': { opacity: '0.4' },
           '50%': { opacity: '0.8' },
+        },
+        drawIn: {
+          from: { strokeDashoffset: '1' },
+          to: { strokeDashoffset: '0' }
+        },
+        drawOut: {
+          from: { strokeDashoffset: '0' },
+          to: { strokeDashoffset: '1' }
         }
       }
     },

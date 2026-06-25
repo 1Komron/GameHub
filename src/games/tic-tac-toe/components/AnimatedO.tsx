@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../../shared/lib/utils';
 
 export const AnimatedO: React.FC<{ className?: string; isRemoving?: boolean; animationsEnabled: boolean }> = ({ 
@@ -17,7 +16,8 @@ export const AnimatedO: React.FC<{ className?: string; isRemoving?: boolean; ani
 
   return (
     <svg viewBox="0 0 100 100" className={cn(className)}>
-      <motion.circle
+      <circle
+        pathLength={1}
         cx="50"
         cy="50"
         r="35"
@@ -25,9 +25,8 @@ export const AnimatedO: React.FC<{ className?: string; isRemoving?: boolean; ani
         strokeWidth="12"
         fill="none"
         strokeLinecap="round"
-        initial={{ pathLength: isRemoving ? 1 : 0 }}
-        animate={{ pathLength: isRemoving ? 0 : 1 }}
-        transition={{ duration: 0.25, ease: "linear" }}
+        className={isRemoving ? "animate-circle-draw-out" : "animate-circle-draw-in"}
+        style={{ strokeDasharray: 1 }}
       />
     </svg>
   );
